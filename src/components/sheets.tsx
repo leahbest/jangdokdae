@@ -182,7 +182,7 @@ async function getJSON<T>(url: string): Promise<T> {
   return body as T;
 }
 
-/** 담기: 검색(알라딘·TMDB·KOPIS) / 링크로 표지 가져오기 / 직접 입력 */
+/** 담기: 검색(카카오 책·TMDB·KOPIS) / 링크로 표지 가져오기 / 직접 입력 */
 export function AddSheet({ jar, onClose, onAdd }: { jar: Jar; onClose: () => void; onAdd: (d: NewItem) => void }) {
   const [tab, setTab] = useState<AddTab>('search');
   const [added, setAdded] = useState<string[]>(() => jar.items.map((i) => i.title));

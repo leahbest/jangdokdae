@@ -1,6 +1,6 @@
 // 표지·포스터 검색: GET /api/search?type=book&q=데미안
-// 책·웹소설·웹툰/만화 → 알라딘, 영화·드라마 → TMDB, 뮤지컬·연극 → KOPIS
-// 키는 Vercel 환경 변수(ALADIN_TTB_KEY, TMDB_TOKEN, KOPIS_KEY)에만 두고 브라우저로 보내지 않아요.
+// 책·웹소설·웹툰/만화 → 카카오 책 검색, 영화·드라마 → TMDB, 뮤지컬·연극 → KOPIS
+// 키는 Vercel 환경 변수(KAKAO_REST_KEY, TMDB_TOKEN, KOPIS_KEY)에만 두고 브라우저로 보내지 않아요.
 import { HttpError, decode, fetchWithTimeout, https, one, type Hit, type Req, type Res } from './_lib.js';
 
 function need(name: string, label: string) {
@@ -9,47 +9,35 @@ function need(name: string, label: string) {
   return v;
 }
 
-/* ── 알라딘 ── */
-type AladinItem = { title: string; author: string; publisher: string; pubDate: string; cover: string; link: string };
+/* ── 카카오(다음) 책 검색 ── (알라딘 OpenAPI는 2026-10-30 종료) */
+type KakaoBook = { title: string; authors: string[]; translators: string[]; publisher: string; datetime: string; thumbnail: string; url: string };
 
-function splitAuthor(author: string) {
-  // "오비디우스 (지은이), 이윤기 (옮긴이)" → creator: 오비디우스, translator: 이윤기
-  const people = author.split(/,\s*/).map((p) => {
-    const m = p.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
-    return m ? { name: m[1].trim(), role: m[2] } : { name: p.trim(), role: '' };
-  });
-  const main = people.filter((p) => !/옮긴이|번역|역자|감수|해설|엮은이/.test(p.role)).map((p) => p.name);
-  const tr = people.filter((p) => /옮긴이|번역|역자/.test(p.role)).map((p) => p.name);
-  return { creator: main.filter(Boolean).join(', '), translator: tr.join(', ') };
+/** 카카오 썸네일(120x174)에서 원본 표지 주소를 꺼내요. */
+function bigCover(thumb: string) {
+  if (!thumb) return null;
+  try {
+    const f = new URL(thumb).searchParams.get('fname');
+    if (f) return https(decodeURIComponent(f));
+  } catch { /* 그대로 사용 */ }
+  return https(thumb);
 }
 
-async function aladin(q: string, target: 'Book' | 'eBook'): Promise<Hit[]> {
-  const key = need('ALADIN_TTB_KEY', '알라딘');
-  const u = new URL('https://www.aladin.co.kr/ttb/api/ItemSearch.aspx');
-  Object.entries({
-    ttbkey: key, Query: q, QueryType: 'Keyword', MaxResults: '20', start: '1',
-    SearchTarget: target, output: 'js', Version: '20131101', Cover: 'Big',
-  }).forEach(([k, v]) => u.searchParams.set(k, v));
-  const r = await fetchWithTimeout(u.toString());
-  const text = await r.text();
-  let data: { item?: AladinItem[]; errorCode?: number; errorMessage?: string };
-  try {
-    data = JSON.parse(text.replace(/;\s*$/, ''));
-  } catch {
-    throw new HttpError(502, '알라딘 응답을 읽지 못했어요.');
-  }
-  if (data.errorCode) throw new HttpError(502, `알라딘: ${data.errorMessage || '오류'}`);
-  return (data.item || []).map((it) => {
-    const { creator, translator } = splitAuthor(decode(it.author || ''));
-    const year = (it.pubDate || '').slice(0, 4);
-    return {
-      title: decode(it.title),
-      creator,
-      sub: [translator && `${translator} 옮김`, decode(it.publisher || ''), year].filter(Boolean).join(' · '),
-      cover: https(it.cover),
-      link: https(it.link),
-    };
-  });
+async function kakaoBooks(q: string): Promise<Hit[]> {
+  const key = need('KAKAO_REST_KEY', '카카오');
+  const u = new URL('https://dapi.kakao.com/v3/search/book');
+  u.searchParams.set('query', q);
+  u.searchParams.set('size', '30');
+  const r = await fetchWithTimeout(u.toString(), { headers: { Authorization: `KakaoAK ${key}` } });
+  if (r.status === 401) throw new HttpError(502, '카카오 키가 맞지 않아요.');
+  if (!r.ok) throw new HttpError(502, `카카오 검색 오류 (${r.status})`);
+  const data = (await r.json()) as { documents?: KakaoBook[] };
+  return (data.documents || []).map((b) => ({
+    title: decode(b.title),
+    creator: (b.authors || []).join(', '),
+    sub: [b.translators?.length ? `${b.translators.join(', ')} 옮김` : '', b.publisher, (b.datetime || '').slice(0, 4)].filter(Boolean).join(' · '),
+    cover: bigCover(b.thumbnail),
+    link: https(b.url),
+  }));
 }
 
 /* ── TMDB ── */
@@ -95,7 +83,7 @@ async function kopis(q: string, genre: 'GGGA' | 'AAAA'): Promise<Hit[]> {
     service: key, stdate: '20000101', eddate: ymd(new Date(now.getFullYear() + 1, now.getMonth(), now.getDate())),
     cpage: '1', rows: '30', shprfnm: q, shcate: genre,
   }).forEach(([k, v]) => u.searchParams.set(k, v));
-  const r = await fetchWithTimeout(u.toString());
+  const r = await fetchWithTimeout(u.toString(), {}, 15000);
   const xml = await r.text();
   const err = xml.match(/<returncode>([\s\S]*?)<\/returncode>[\s\S]*?<errmsg>([\s\S]*?)<\/errmsg>/);
   if (err && err[1].trim() !== '00') throw new HttpError(502, `KOPIS: ${decode(err[2])}`);
@@ -129,13 +117,7 @@ export default async function handler(req: Req, res: Res) {
     if (q.length > 100) throw new HttpError(400, '검색어가 너무 길어요.');
     let hits: Hit[];
     switch (type) {
-      case 'book': case 'comic': hits = await aladin(q, 'Book'); break;
-      case 'webnovel': {
-        const [e, b] = await Promise.allSettled([aladin(q, 'eBook'), aladin(q, 'Book')]);
-        if (e.status === 'rejected' && b.status === 'rejected') throw e.reason;
-        hits = [...(e.status === 'fulfilled' ? e.value : []), ...(b.status === 'fulfilled' ? b.value : [])].slice(0, 30);
-        break;
-      }
+      case 'book': case 'comic': case 'webnovel': hits = await kakaoBooks(q); break;
       case 'movie': hits = await tmdb(q, 'movie'); break;
       case 'drama': hits = await tmdb(q, 'tv'); break;
       case 'musical': hits = await kopis(q, 'GGGA'); break;
