@@ -274,8 +274,8 @@ function LinkPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
     if (!/^https?:\/\//.test(url.trim())) return setErr('https://로 시작하는 주소를 넣어주세요.');
     setBusy(true); setErr(''); setFound(null);
     try {
-      const r = await getJSON<{ cover: string; title: string }>(`/api/cover?url=${encodeURIComponent(url.trim())}`);
-      setFound(r); setTitle(r.title);
+      const r = await getJSON<{ cover: string; title: string; creator?: string }>(`/api/cover?url=${encodeURIComponent(url.trim())}`);
+      setFound(r); setTitle(r.title); setCreator(r.creator || '');
     } catch (e2) {
       setErr((e2 as Error).message);
     } finally {
