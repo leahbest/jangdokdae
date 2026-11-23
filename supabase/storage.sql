@@ -14,6 +14,11 @@ drop policy if exists "covers: upload own" on storage.objects;
 create policy "covers: upload own" on storage.objects for insert to authenticated
   with check (bucket_id = 'covers' and (storage.foldername(name))[1] = auth.uid()::text);
 
+-- 지우기·목록 보기는 자기 파일을 '볼 수 있어야' 해서 select 규칙도 필요해요.
+drop policy if exists "covers: read own" on storage.objects;
+create policy "covers: read own" on storage.objects for select to authenticated
+  using (bucket_id = 'covers' and (storage.foldername(name))[1] = auth.uid()::text);
+
 drop policy if exists "covers: delete own" on storage.objects;
 create policy "covers: delete own" on storage.objects for delete to authenticated
   using (bucket_id = 'covers' and (storage.foldername(name))[1] = auth.uid()::text);

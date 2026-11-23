@@ -14,6 +14,12 @@ export interface Store {
 
 const byPos = <T extends { position: number }>(a: T, b: T) => a.position - b.position;
 
+/** 우리 저장소(covers)에 올린 사진 주소면 저장소 안 경로를, 아니면 null */
+const coverPath = (url: string | null | undefined) => {
+  const m = url?.match(/\/storage\/v1\/object\/public\/covers\/(.+)$/);
+  return m ? decodeURIComponent(m[1]) : null;
+};
+
 /* ── 계정 동기화: Supabase ───────────────────────────── */
 export class SupabaseStore implements Store {
   constructor(private sb: SupabaseClient) {}
@@ -33,17 +39,33 @@ export class SupabaseStore implements Store {
   async updateJar(id: string, patch: JarPatch) {
     this.check(await this.sb.from('jars').update(patch).eq('id', id));
   }
+  /** 사진 파일 정리는 실패해도 괜찮아요(데이터 저장이 우선). */
+  private async removeCovers(urls: (string | null)[]) {
+    const paths = urls.map(coverPath).filter((p): p is string => !!p);
+    if (paths.length) await this.sb.storage.from('covers').remove(paths).catch(() => {});
+  }
+  private async coversOf(column: 'id' | 'jar_id', value: string) {
+    const { data } = await this.sb.from('items').select('cover_url').eq(column, value);
+    return (data || []).map((r) => r.cover_url as string | null);
+  }
+
   async deleteJar(id: string) {
+    const covers = await this.coversOf('jar_id', id);
     this.check(await this.sb.from('jars').delete().eq('id', id));
+    await this.removeCovers(covers);
   }
   async addItem(item: Item) {
     this.check(await this.sb.from('items').insert(item));
   }
   async updateItem(id: string, patch: ItemPatch) {
+    const old = 'cover_url' in patch ? await this.coversOf('id', id) : [];
     this.check(await this.sb.from('items').update(patch).eq('id', id));
+    await this.removeCovers(old.filter((u) => u !== patch.cover_url));
   }
   async deleteItem(id: string) {
+    const covers = await this.coversOf('id', id);
     this.check(await this.sb.from('items').delete().eq('id', id));
+    await this.removeCovers(covers);
   }
 }
 

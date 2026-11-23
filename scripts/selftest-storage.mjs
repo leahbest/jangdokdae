@@ -23,8 +23,8 @@ const w = 4, h = 6, raw = Buffer.concat(Array.from({ length: h }, () => Buffer.f
 const chunk = (t, d) => { const len = Buffer.alloc(4); len.writeUInt32BE(d.length); const c = Buffer.alloc(4); c.writeUInt32BE(crc32(Buffer.concat([Buffer.from(t), d])) >>> 0); return Buffer.concat([len, Buffer.from(t), d, c]); };
 const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr.set([8, 2, 0, 0, 0], 8);
 const png = Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
-const path = `${uid}/selftest.png`;
-const up = await sb.storage.from('covers').upload(path, png, { contentType: 'image/png', upsert: true });
+const path = `${uid}/selftest-${Date.now()}.png`;
+const up = await sb.storage.from('covers').upload(path, png, { contentType: 'image/png', upsert: false });
 log('upload own folder', up.error?.message ?? 'ok');
 const pub = sb.storage.from('covers').getPublicUrl(path).data.publicUrl;
 const got = await fetch(pub);
