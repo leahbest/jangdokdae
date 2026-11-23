@@ -11,5 +11,5 @@ export default async function handler(req: Req, res: Res) {
   const metas = (body.match(/<meta[^>]+(?:og:|twitter:)[^>]+>/gi) || []).slice(0, 8);
   const imgs = [...new Set(body.match(/https?:\/\/[^"'\s)\\]+?\.(?:jpe?g|png|webp)/gi) || [])].slice(0, 20);
   const keys = [...new Set(body.match(/"[A-Za-z]*(?:[Ii]mage|[Tt]humbnail|[Tt]itle)[A-Za-z]*"\s*:/g) || [])].slice(0, 40);
-  res.status(200).json({ status: r.status, final: r.url, len: body.length, head: body.slice(0, 300), metas, imgs, keys });
+  res.status(200).json({ status: r.status, final: r.url, len: body.length, head: body.slice(0, u.hostname.startsWith('gateway') ? 4000 : 300), metas, imgs, keys });
 }
