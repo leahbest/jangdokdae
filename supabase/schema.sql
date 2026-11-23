@@ -94,3 +94,11 @@ revoke all on function public.set_recovery(text) from public, anon;
 grant execute on function public.set_recovery(text) to authenticated;
 revoke all on function public.reset_password_with_code(text, text, text) from public;
 grant execute on function public.reset_password_with_code(text, text, text) to anon, authenticated;
+
+-- 7. 접근 권한 (최근 Supabase 프로젝트는 새 테이블에 자동으로 권한을 주지 않아요)
+--    로그인 전(anon)에는 테이블에 접근할 수 없고, 로그인한 사용자는 RLS 규칙 안에서 자기 데이터만 다뤄요.
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on public.jars, public.items to authenticated;
+grant select on public.profiles to authenticated;
+grant execute on function public.set_recovery(text) to authenticated;
+grant execute on function public.reset_password_with_code(text, text, text) to anon, authenticated;
