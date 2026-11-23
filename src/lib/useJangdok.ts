@@ -12,6 +12,7 @@ export function useJangdok(store: Store, onError: (msg: string) => void) {
   const [jars, setJars] = useState<Jar[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const pending = useRef(0);
+  const queue = useRef<Promise<void>>(Promise.resolve());
 
   const reload = useCallback(async () => {
     try {
@@ -38,7 +39,9 @@ export function useJangdok(store: Store, onError: (msg: string) => void) {
     (local: (js: Jar[]) => Jar[], remote: () => Promise<void>) => {
       setJars((js) => (js ? local(js) : js));
       pending.current++;
-      remote()
+      // 저장은 순서대로 하나씩: "담기" 직후 "완료"를 눌러도 담기가 먼저 끝난 뒤에 완료가 저장돼요.
+      queue.current = queue.current
+        .then(remote)
         .catch(() => {
           onError('저장하지 못했어요. 인터넷 연결을 확인해주세요.');
         })
