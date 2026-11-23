@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 import type { Item, Jar, JarType } from '../lib/types';
 import { RATE_LABEL, TYPES } from '../lib/types';
 import { fmtDay } from '../lib/util';
+import { uploadCover } from '../lib/upload';
 import { Sheet } from './ui';
 import { Cover, JarIcon, StarCluster } from './visuals';
 
@@ -41,8 +42,8 @@ export function NewJarSheet({ onClose, onCreate }: { onClose: () => void; onCrea
   );
 }
 
-export function ItemMenuSheet({ it, jar, onClose, onRate, onMemo, onRemove }: {
-  it: Item; jar: Jar; onClose: () => void; onRate: () => void; onMemo: () => void; onRemove: () => void;
+export function ItemMenuSheet({ it, jar, onClose, onRate, onMemo, onCover, onRemove }: {
+  it: Item; jar: Jar; onClose: () => void; onRate: () => void; onMemo: () => void; onCover: () => void; onRemove: () => void;
 }) {
   const [confirm, setConfirm] = useState(false);
   return (
@@ -62,6 +63,7 @@ export function ItemMenuSheet({ it, jar, onClose, onRate, onMemo, onRemove }: {
           <div className="menu">
             {it.done_at && <button type="button" onClick={onRate}>별점 {it.rating ? '바꾸기' : '남기기'}</button>}
             <button type="button" onClick={onMemo}>{it.memo ? '메모 고치기' : '메모 남기기'}</button>
+            <button type="button" onClick={onCover}>표지 바꾸기</button>
             {it.source_url && <a className="menu-link" href={it.source_url} target="_blank" rel="noreferrer">작품 페이지 열기</a>}
             <button type="button" className="danger" onClick={() => setConfirm(true)}>장독에서 빼기</button>
           </div>
@@ -168,7 +170,7 @@ export function CrackSheet({ jar, onClose, onSee }: { jar: Jar; onClose: () => v
 
 type NewItem = { title: string; creator: string; sub: string; source_url: string | null; cover_url: string | null };
 type Hit = { title: string; creator: string; sub: string; cover: string | null; link: string | null };
-type AddTab = 'search' | 'link' | 'manual';
+type AddTab = 'search' | 'link' | 'photo' | 'manual';
 
 async function getJSON<T>(url: string): Promise<T> {
   let r: Response;
@@ -193,12 +195,13 @@ export function AddSheet({ jar, onClose, onAdd }: { jar: Jar; onClose: () => voi
       <h2>‘{jar.name}’에 담기</h2>
       <p className="lead">표지를 찾아 장독에 넣어요.</p>
       <div className="tabs" role="tablist">
-        {([['search', '검색'], ['link', '링크로'], ['manual', '직접 입력']] as [AddTab, string][]).map(([k, l]) => (
+        {([['search', '검색'], ['link', '링크로'], ['photo', '사진'], ['manual', '직접 입력']] as [AddTab, string][]).map(([k, l]) => (
           <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
       {tab === 'search' && <SearchPane jar={jar} added={added} onAdd={add} />}
       {tab === 'link' && <LinkPane onAdd={add} />}
+      {tab === 'photo' && <PhotoPane onAdd={add} />}
       {tab === 'manual' && <ManualPane onAdd={add} />}
       <div className="sheet-actions"><button className="ghost" type="button" onClick={onClose}>다 담았어요</button></div>
     </Sheet>
@@ -306,6 +309,71 @@ function LinkPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
         </form>
       )}
     </>
+  );
+}
+
+/** 사진 고르기 → 줄여서 올리고 주소를 받아요 */
+function useCoverUpload() {
+  const [cover, setCover] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const pick = async (file: File | undefined) => {
+    if (!file) return;
+    setBusy(true); setErr('');
+    try { setCover(await uploadCover(file)); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
+  return { cover, setCover, busy, err, setErr, pick };
+}
+
+function PhotoPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
+  const up = useCoverUpload();
+  const [title, setTitle] = useState('');
+  const [creator, setCreator] = useState('');
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!up.cover) return up.setErr('표지 사진을 골라주세요.');
+    if (!title.trim()) return up.setErr('제목을 적어주세요.');
+    onAdd({ title: title.trim(), creator: creator.trim(), sub: '', source_url: null, cover_url: up.cover });
+    up.setCover(null); setTitle(''); setCreator('');
+  };
+  return (
+    <form onSubmit={submit}>
+      <div className="field">
+        <label htmlFor="u-file">표지 사진</label>
+        <input id="u-file" type="file" accept="image/*" onChange={(e) => up.pick(e.target.files?.[0])} />
+        <p className="hint">책 표지를 찍거나 캡처한 사진을 골라요. 자동으로 알맞은 크기로 줄여요.</p>
+      </div>
+      {up.busy && <p className="hint">사진 올리는 중…</p>}
+      {up.cover && <div className="preview"><Cover it={{ title, creator, cover_url: up.cover }} /></div>}
+      <div className="field"><label htmlFor="u-title">제목</label><input id="u-title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+      <div className="field"><label htmlFor="u-by">만든 사람 (선택)</label><input id="u-by" maxLength={80} value={creator} onChange={(e) => setCreator(e.target.value)} /></div>
+      {up.err && <p className="err" role="alert">{up.err}</p>}
+      <div className="sheet-actions"><button className="primary" type="submit" disabled={up.busy}>담기</button></div>
+    </form>
+  );
+}
+
+/** 이미 담긴 작품의 표지 바꾸기 */
+export function CoverSheet({ it, onClose, onSave }: { it: Item; onClose: () => void; onSave: (cover: string | null) => void }) {
+  const up = useCoverUpload();
+  const shown = up.cover ?? it.cover_url;
+  return (
+    <Sheet onClose={onClose} label="표지 바꾸기">
+      <h2>표지 바꾸기</h2>
+      <p className="lead">{it.title}</p>
+      <div className="preview"><Cover it={{ title: it.title, creator: it.creator, cover_url: shown }} /></div>
+      <div className="field">
+        <label htmlFor="c-file">새 표지 사진</label>
+        <input id="c-file" type="file" accept="image/*" onChange={(e) => up.pick(e.target.files?.[0])} />
+      </div>
+      {up.busy && <p className="hint">사진 올리는 중…</p>}
+      {up.err && <p className="err" role="alert">{up.err}</p>}
+      <div className="sheet-actions">
+        {it.cover_url && <button className="ghost" type="button" onClick={() => onSave(null)}>기본 표지로</button>}
+        <button className="ghost" type="button" onClick={onClose}>취소</button>
+        <button className="primary" type="button" disabled={!up.cover || up.busy} onClick={() => onSave(up.cover)}>저장</button>
+      </div>
+    </Sheet>
   );
 }
 

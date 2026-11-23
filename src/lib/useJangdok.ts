@@ -85,6 +85,22 @@ export function useJangdok(store: Store, onError: (msg: string) => void) {
     setDone: (id: string, done: boolean) => patchItem(id, { done_at: done ? nowISO() : null }),
     rate: (id: string, rating: number | null) => patchItem(id, { rating }),
     memo: (id: string, memo: string | null) => patchItem(id, { memo }),
+    setCover: (id: string, cover_url: string | null) => patchItem(id, { cover_url }),
+    /** 작품을 한 칸 앞(-1)/뒤(+1)로. 바뀐 작품들의 position만 저장해요. */
+    move(jarId: string, itemId: string, dir: -1 | 1) {
+      const jar = jars?.find((j) => j.id === jarId);
+      if (!jar) return;
+      const list = [...jar.items];
+      const i = list.findIndex((x) => x.id === itemId);
+      const k = i + dir;
+      if (i < 0 || k < 0 || k >= list.length) return;
+      [list[i], list[k]] = [list[k], list[i]];
+      const changed = list.map((it, n) => ({ id: it.id, position: n, old: it.position })).filter((x) => x.position !== x.old);
+      run(
+        (js) => js.map((j) => (j.id === jarId ? { ...j, items: list.map((it, n) => ({ ...it, position: n })) } : j)),
+        async () => { for (const c of changed) await store.updateItem(c.id, { position: c.position }); },
+      );
+    },
     removeItem: (id: string) =>
       run((js) => js.map((j) => ({ ...j, items: j.items.filter((i) => i.id !== id) })), () => store.deleteItem(id)),
   };

@@ -268,3 +268,10 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .check{display:flex;gap:10px;align-items:center;margin:16px 0 6px;font-size:14px;cursor:pointer}
 .check input{width:18px;height:18px;accent-color:var(--brand)}
 .found{border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
+.sort-toggle{margin-left:auto}
+.filters .sort-toggle.on{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.move-row{align-items:center}
+.move{flex:1;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:8px 0;font-size:16px;color:var(--ink)}
+.move:disabled{opacity:.3;cursor:default}
+.pos{min-width:28px;text-align:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.cover-btn:disabled{cursor:default}

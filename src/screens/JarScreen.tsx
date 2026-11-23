@@ -6,10 +6,11 @@ import { Cover, RateBadge } from '../components/visuals';
 
 type Filter = 'all' | 'todo' | 'done';
 
-export function JarScreen({ jar, focusId, onToggle, onItemMenu, onAdd, onJarMenu, onCrack }: {
+export function JarScreen({ jar, focusId, onToggle, onMove, onItemMenu, onAdd, onJarMenu, onCrack }: {
   jar: Jar;
   focusId: string | null;
   onToggle: (it: Item) => void;
+  onMove: (itemId: string, dir: -1 | 1) => void;
   onItemMenu: (it: Item) => void;
   onAdd: () => void;
   onJarMenu: () => void;
@@ -17,8 +18,9 @@ export function JarScreen({ jar, focusId, onToggle, onItemMenu, onAdd, onJarMenu
 }) {
   const [filter, setFilter] = useState<Filter>('all');
   const [just, setJust] = useState<string | null>(null);
+  const [sorting, setSorting] = useState(false);
   const s = stats(jar);
-  const items = jar.items.filter((i) => filter === 'all' || (filter === 'done' ? i.done_at : !i.done_at));
+  const items = sorting ? jar.items : jar.items.filter((i) => filter === 'all' || (filter === 'done' ? i.done_at : !i.done_at));
 
   useEffect(() => {
     if (!focusId) return;
@@ -55,9 +57,14 @@ export function JarScreen({ jar, focusId, onToggle, onItemMenu, onAdd, onJarMenu
 
       {s.n > 0 && (
         <nav className="filters" aria-label="보기">
-          {([['all', '전체'], ['todo', '미완료'], ['done', '완료']] as [Filter, string][]).map(([k, l]) => (
+          {!sorting && ([['all', '전체'], ['todo', '미완료'], ['done', '완료']] as [Filter, string][]).map(([k, l]) => (
             <button key={k} type="button" aria-pressed={filter === k} onClick={() => setFilter(k)}>{l}</button>
           ))}
+          {s.n > 1 && (
+            <button type="button" className={`sort-toggle ${sorting ? 'on' : ''}`} aria-pressed={sorting} onClick={() => setSorting((v) => !v)}>
+              {sorting ? '순서 바꾸기 끝' : '순서 바꾸기'}
+            </button>
+          )}
         </nav>
       )}
 
@@ -69,7 +76,7 @@ export function JarScreen({ jar, focusId, onToggle, onItemMenu, onAdd, onJarMenu
         </div>
       ) : items.length ? (
         <section className="grid">
-          {items.map((it) => (
+          {items.map((it, idx) => (
             <article
               key={it.id}
               data-item={it.id}
@@ -79,6 +86,7 @@ export function JarScreen({ jar, focusId, onToggle, onItemMenu, onAdd, onJarMenu
                 className="cover-btn"
                 type="button"
                 aria-label={`${it.title} ${it.done_at ? '미완료로 되돌리기' : '완료로 표시'}`}
+                disabled={sorting}
                 onClick={() => { setJust(it.id); onToggle(it); }}
               >
                 <Cover it={it} />
@@ -90,12 +98,20 @@ export function JarScreen({ jar, focusId, onToggle, onItemMenu, onAdd, onJarMenu
                 {it.sub && <p>{it.sub}</p>}
               </div>
               {it.memo && <p className="memo">{it.memo}</p>}
+              {sorting ? (
+                <div className="row move-row">
+                  <button type="button" className="move" disabled={idx === 0} onClick={() => onMove(it.id, -1)} aria-label={`${it.title} 앞으로`}>←</button>
+                  <span className="pos">{idx + 1}</span>
+                  <button type="button" className="move" disabled={idx === items.length - 1} onClick={() => onMove(it.id, 1)} aria-label={`${it.title} 뒤로`}>→</button>
+                </div>
+              ) : (
               <div className="row">
                 <button className="status" type="button" onClick={() => { setJust(it.id); onToggle(it); }}>
                   {it.done_at ? '✓ 완료' : '미완료'}
                 </button>
                 <button className="more" type="button" onClick={() => onItemMenu(it)} aria-label={`${it.title} 더보기`}>⋯</button>
               </div>
+              )}
             </article>
           ))}
         </section>

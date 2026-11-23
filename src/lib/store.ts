@@ -77,7 +77,7 @@ export class LocalStore implements Store {
     }
   }
   async load() {
-    return structuredClone(this.jars);
+    return structuredClone(this.jars).map((j) => ({ ...j, items: j.items.sort(byPos) }));
   }
   async createJar(jar: Jar) {
     this.jars.push(structuredClone(jar));

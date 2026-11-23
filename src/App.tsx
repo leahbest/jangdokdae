@@ -9,7 +9,7 @@ import { stats } from './lib/types';
 import { Sheet, ToastProvider, useToast } from './components/ui';
 import { LadleIcon, Logo } from './components/visuals';
 import {
-  AddSheet, CrackSheet, ItemMenuSheet, JarMenuSheet, LadleSheet, MemoSheet, NewJarSheet, RatingSheet,
+  AddSheet, CoverSheet, CrackSheet, ItemMenuSheet, JarMenuSheet, LadleSheet, MemoSheet, NewJarSheet, RatingSheet,
 } from './components/sheets';
 import { Home } from './screens/Home';
 import { JarScreen } from './screens/JarScreen';
@@ -55,7 +55,7 @@ function parse(h: string): Route {
 }
 
 type SheetState =
-  | { k: 'newJar' } | { k: 'item'; id: string } | { k: 'rate'; id: string } | { k: 'memo'; id: string }
+  | { k: 'newJar' } | { k: 'item'; id: string } | { k: 'rate'; id: string } | { k: 'memo'; id: string } | { k: 'cover'; id: string }
   | { k: 'jarMenu' } | { k: 'crack'; jarId: string } | { k: 'add' } | { k: 'ladle' } | { k: 'account' } | null;
 
 function Main({ store, account, onShowCode }: { store: Store; account: string | null; onShowCode: (c: string) => void }) {
@@ -153,6 +153,7 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
                 jar={jar!}
                 focusId={focusId}
                 onToggle={toggle}
+                onMove={(itemId, dir) => data.move(jar!.id, itemId, dir)}
                 onItemMenu={(it) => openSheet({ k: 'item', id: it.id })}
                 onAdd={() => openSheet({ k: 'add' })}
                 onJarMenu={() => openSheet({ k: 'jarMenu' })}
@@ -179,6 +180,7 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
           onClose={close}
           onRate={() => openSheet({ k: 'rate', id: sItem.id })}
           onMemo={() => openSheet({ k: 'memo', id: sItem.id })}
+          onCover={() => openSheet({ k: 'cover', id: sItem.id })}
           onRemove={() => { data.removeItem(sItem.id); close(); toast.show('장독에서 뺐어요'); }}
         />
       )}
@@ -187,6 +189,9 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
       )}
       {s?.k === 'memo' && sItem && (
         <MemoSheet it={sItem} onClose={close} onSave={(m) => { data.memo(sItem.id, m); close(); toast.show(m ? '메모를 남겼어요' : '메모를 지웠어요'); }} />
+      )}
+      {s?.k === 'cover' && sItem && (
+        <CoverSheet it={sItem} onClose={close} onSave={(c) => { data.setCover(sItem.id, c); close(); toast.show('표지를 바꿨어요'); }} />
       )}
       {s?.k === 'jarMenu' && jar && (
         <JarMenuSheet
