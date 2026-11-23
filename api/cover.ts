@@ -40,6 +40,7 @@ export default async function handler(req: Req, res: Res) {
       const html = (await r.text()).slice(0, 400_000);
       title = meta(html, 'og:title') || decode(html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || '');
       title = title.replace(/\s*[-|:]\s*(리디|RIDI|레진코믹스|봄툰|교보문고|알라딘|YES24|네이버.*|카카오.*)$/i, '').trim();
+      if (/^(리디|RIDI|ridibooks|레진코믹스|봄툰|교보문고|알라딘|YES24|네이버 웹툰|카카오페이지)$/i.test(title)) title = '';
       const og = meta(html, 'og:image');
       if (!cover && og) cover = https(new URL(og, url).toString());
     } catch {
