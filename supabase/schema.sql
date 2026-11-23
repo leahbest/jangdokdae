@@ -17,7 +17,7 @@ create table if not exists public.jars (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users on delete cascade,
   name text not null check (char_length(name) between 1 and 24),
-  type text not null check (type in ('book','webnovel','comic','movie','drama','musical','play')),
+  type text not null check (type in ('book','webnovel','comic','movie','drama','variety','musical','play')),
   broken_at timestamptz,
   position double precision not null default extract(epoch from now()),
   created_at timestamptz not null default now()
@@ -102,3 +102,8 @@ grant select, insert, update, delete on public.jars, public.items to authenticat
 grant select on public.profiles to authenticated;
 grant execute on function public.set_recovery(text) to authenticated;
 grant execute on function public.reset_password_with_code(text, text, text) to anon, authenticated;
+
+-- 8. 종류에 '예능(variety)' 추가 (이미 만든 프로젝트용)
+alter table public.jars drop constraint if exists jars_type_check;
+alter table public.jars add constraint jars_type_check
+  check (type in ('book','webnovel','comic','movie','drama','variety','musical','play'));

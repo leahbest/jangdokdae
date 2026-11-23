@@ -25,7 +25,7 @@ export default async function handler(req: Req, res: Res) {
       throw new HttpError(400, '주소 형식이 맞지 않아요.');
     }
     if (!/^https?:$/.test(url.protocol)) throw new HttpError(400, '주소는 https://로 시작해야 해요.');
-    if (!allowed(url.hostname)) throw new HttpError(400, '아직 지원하지 않는 사이트예요. 표지를 직접 올려주세요.');
+    if (!allowed(url.hostname)) throw new HttpError(400, '이미지 주소가 아니거나 아직 지원하지 않는 사이트예요. 이미지를 길게 눌러 ‘이미지 주소 복사’로 받은 주소를 넣어주세요.');
 
     // 리디: 주소의 도서 번호로 표지 주소를 바로 만들 수 있어요.
     const ridi = url.hostname.endsWith('ridibooks.com') && url.pathname.match(/\/books\/(\d+)/);

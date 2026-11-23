@@ -179,14 +179,16 @@ async function getJSON<T>(url: string): Promise<T> {
   } catch {
     throw new Error('인터넷 연결을 확인해주세요.');
   }
-  const body = await r.json().catch(() => ({ error: '표지 서버에 연결하지 못했어요.' }));
+  const body = await r.json().catch(() => null);
+  if (!body) throw new Error('표지 서버에 연결하지 못했어요. 잠시 후 다시 시도해주세요.');
   if (!r.ok) throw new Error(body.error || '문제가 생겼어요.');
   return body as T;
 }
 
 /** 담기: 검색(카카오 책·TMDB·KOPIS) / 링크로 표지 가져오기 / 직접 입력 */
 export function AddSheet({ jar, onClose, onAdd }: { jar: Jar; onClose: () => void; onAdd: (d: NewItem) => void }) {
-  const [tab, setTab] = useState<AddTab>('search');
+  const searchable = !!TYPES[jar.type].src;
+  const [tab, setTab] = useState<AddTab>(searchable ? 'search' : 'link');
   const [added, setAdded] = useState<string[]>(() => jar.items.map((i) => i.title));
   const add = (d: NewItem) => { onAdd(d); setAdded((a) => [...a, d.title]); };
 
@@ -195,12 +197,12 @@ export function AddSheet({ jar, onClose, onAdd }: { jar: Jar; onClose: () => voi
       <h2>‘{jar.name}’에 담기</h2>
       <p className="lead">표지를 찾아 장독에 넣어요.</p>
       <div className="tabs" role="tablist">
-        {([['search', '검색'], ['link', '링크로'], ['photo', '사진'], ['manual', '직접 입력']] as [AddTab, string][]).map(([k, l]) => (
+        {([...(searchable ? [['search', '검색']] : []), ['link', searchable ? '링크로' : '이미지 링크'], ['photo', '사진'], ['manual', '직접 입력']] as [AddTab, string][]).map(([k, l]) => (
           <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
       {tab === 'search' && <SearchPane jar={jar} added={added} onAdd={add} />}
-      {tab === 'link' && <LinkPane onAdd={add} />}
+      {tab === 'link' && <LinkPane onAdd={add} imageFirst={!searchable} />}
       {tab === 'photo' && <PhotoPane onAdd={add} />}
       {tab === 'manual' && <ManualPane onAdd={add} />}
       <div className="sheet-actions"><button className="ghost" type="button" onClick={onClose}>다 담았어요</button></div>
@@ -261,7 +263,19 @@ function SearchPane({ jar, added, onAdd }: { jar: Jar; added: string[]; onAdd: (
   );
 }
 
-function LinkPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
+/** 주소가 이미지 그 자체인지 브라우저에서 직접 열어봐요. */
+function loadsAsImage(u: string) {
+  return new Promise<boolean>((ok) => {
+    const img = new Image();
+    const t = setTimeout(() => ok(false), 8000);
+    img.referrerPolicy = 'no-referrer';
+    img.onload = () => { clearTimeout(t); ok(img.naturalWidth > 20); };
+    img.onerror = () => { clearTimeout(t); ok(false); };
+    img.src = u;
+  });
+}
+
+function LinkPane({ onAdd, imageFirst }: { onAdd: (d: NewItem) => void; imageFirst: boolean }) {
   const [url, setUrl] = useState('');
   const [found, setFound] = useState<{ cover: string; title: string } | null>(null);
   const [title, setTitle] = useState('');
@@ -274,7 +288,13 @@ function LinkPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
     if (!/^https?:\/\//.test(url.trim())) return setErr('https://로 시작하는 주소를 넣어주세요.');
     setBusy(true); setErr(''); setFound(null);
     try {
-      const r = await getJSON<{ cover: string; title: string; creator?: string }>(`/api/cover?url=${encodeURIComponent(url.trim())}`);
+      const u = url.trim();
+      // 1) 이미지 주소면 그대로 표지로  2) 아니면 작품 페이지에서 대표 이미지 찾기
+      if (await loadsAsImage(u)) {
+        setFound({ cover: u, title: '' }); setTitle(''); setCreator('');
+        return;
+      }
+      const r = await getJSON<{ cover: string; title: string; creator?: string }>(`/api/cover?url=${encodeURIComponent(u)}`);
       setFound(r); setTitle(r.title); setCreator(r.creator || '');
     } catch (e2) {
       setErr((e2 as Error).message);
@@ -285,7 +305,8 @@ function LinkPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
   const submit = (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return setErr('제목을 적어주세요.');
-    onAdd({ title: title.trim(), creator: creator.trim(), sub: '', cover_url: found!.cover, source_url: url.trim() });
+    const isImg = found!.cover === url.trim();
+    onAdd({ title: title.trim(), creator: creator.trim(), sub: '', cover_url: found!.cover, source_url: isImg ? null : url.trim() });
     setUrl(''); setFound(null); setTitle(''); setCreator('');
   };
 
@@ -293,11 +314,16 @@ function LinkPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
     <>
       <form onSubmit={fetchCover}>
         <div className="field">
-          <label htmlFor="l-url">작품 페이지 주소</label>
-          <input id="l-url" type="url" placeholder="https://ridibooks.com/books/…" value={url} onChange={(e) => setUrl(e.target.value)} />
+          <label htmlFor="l-url">{imageFirst ? '포스터 이미지 주소' : '작품 페이지 또는 이미지 주소'}</label>
+          <input id="l-url" type="url" placeholder="https://" value={url}
+            onChange={(e) => { setUrl(e.target.value); setFound(null); setErr(''); }} />
         </div>
-        <p className="hint">리디·레진·봄툰·교보·네이버·카카오 같은 곳의 작품 페이지 주소를 붙여넣어요.</p>
-        {!found && <div className="sheet-actions"><button className="primary" type="submit" disabled={busy}>{busy ? '가져오는 중…' : '표지 가져오기'}</button></div>}
+        <p className="hint">
+          {imageFirst
+            ? '포스터 이미지를 길게 눌러(PC는 오른쪽 클릭) ‘이미지 주소 복사’를 한 뒤 붙여넣어요.'
+            : '리디·레진·네이버 웹툰·카카오웹툰·교보·YES24 작품 페이지 주소나, 표지 이미지 주소를 붙여넣어요.'}
+        </p>
+        {!found && <div className="sheet-actions"><button className="primary" type="submit" disabled={busy}>{busy ? '가져오는 중…' : imageFirst ? '포스터 불러오기' : '표지 가져오기'}</button></div>}
       </form>
       {err && <p className="err" role="alert">{err}</p>}
       {found && (

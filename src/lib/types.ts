@@ -1,13 +1,15 @@
-export type JarType = 'book' | 'webnovel' | 'comic' | 'movie' | 'drama' | 'musical' | 'play';
+export type JarType = 'book' | 'webnovel' | 'comic' | 'movie' | 'drama' | 'variety' | 'musical' | 'play';
 
-export const TYPES: Record<JarType, { label: string; src: string }> = {
+/** src: 표지 검색처. null이면 검색 없이 이미지 링크·사진으로 담아요. */
+export const TYPES: Record<JarType, { label: string; src: string | null }> = {
   book: { label: '책', src: '카카오 책' },
   webnovel: { label: '웹소설', src: '카카오 책' },
   comic: { label: '웹툰·만화', src: '카카오 책' },
-  movie: { label: '영화', src: 'TMDB' },
-  drama: { label: '드라마', src: 'TMDB' },
-  musical: { label: '뮤지컬', src: 'KOPIS' },
-  play: { label: '연극', src: 'KOPIS' },
+  movie: { label: '영화', src: null },
+  drama: { label: '드라마', src: null },
+  variety: { label: '예능', src: null },
+  musical: { label: '뮤지컬', src: null },
+  play: { label: '연극', src: null },
 };
 
 export interface Item {
