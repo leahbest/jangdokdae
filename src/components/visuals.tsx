@@ -1,4 +1,4 @@
-import { useId, type CSSProperties } from 'react';
+import { useId, useState, type CSSProperties } from 'react';
 import type { Jar } from '../lib/types';
 import { stats } from '../lib/types';
 import { PAL, hash, starPts } from '../lib/util';
@@ -16,10 +16,11 @@ export function Logo() {
 
 /** 표지: 이미지가 있으면 이미지, 없으면 제목으로 만든 임시 표지 */
 export function Cover({ it, className = '' }: { it: { title: string; creator: string; cover_url?: string | null }; className?: string }) {
-  if (it.cover_url) {
+  const [broken, setBroken] = useState<string | null>(null);
+  if (it.cover_url && broken !== it.cover_url) {
     return (
       <div className={`art ${className}`}>
-        <img src={it.cover_url} alt="" loading="lazy" referrerPolicy="no-referrer" />
+        <img src={it.cover_url} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(it.cover_url!)} />
       </div>
     );
   }

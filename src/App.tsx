@@ -201,7 +201,7 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
         <CrackSheet jar={jars.find((j) => j.id === s.jarId)!} onClose={close} onSee={() => { close(); nav('broken'); }} />
       )}
       {s?.k === 'add' && jar && (
-        <AddSheet jar={jar} onClose={close} onAdd={(d) => data.addItem(jar.id, { ...d, cover_url: null })} />
+        <AddSheet jar={jar} onClose={close} onAdd={(d) => data.addItem(jar.id, d)} />
       )}
       {s?.k === 'ladle' && (
         <LadleSheet jars={jars} onClose={close} onGo={(jarId, itemId) => { close(); setFocusId(itemId); nav(`jar-${jarId}`); setTimeout(() => setFocusId(itemId)); }} />

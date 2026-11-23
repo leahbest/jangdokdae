@@ -267,3 +267,4 @@ h1,h2,h3{text-wrap:balance;margin:0}
   background:var(--well);border:1.5px dashed var(--brand);border-radius:12px;padding:18px 8px;margin:6px 0 8px;user-select:all;overflow-wrap:anywhere}
 .check{display:flex;gap:10px;align-items:center;margin:16px 0 6px;font-size:14px;cursor:pointer}
 .check input{width:18px;height:18px;accent-color:var(--brand)}
+.found{border-top:1px solid var(--line);margin-top:14px;padding-top:14px}

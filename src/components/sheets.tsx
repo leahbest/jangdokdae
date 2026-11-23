@@ -166,41 +166,168 @@ export function CrackSheet({ jar, onClose, onSee }: { jar: Jar; onClose: () => v
   );
 }
 
-/** 담기: 3단계에서 검색, 4단계에서 링크 표지·업로드가 붙어요. 지금은 직접 입력. */
-export function AddSheet({ jar, onClose, onAdd }: {
-  jar: Jar; onClose: () => void;
-  onAdd: (d: { title: string; creator: string; sub: string; source_url: string | null }) => void;
-}) {
-  const [title, setTitle] = useState('');
-  const [creator, setCreator] = useState('');
-  const [url, setUrl] = useState('');
-  const [err, setErr] = useState('');
-  const [added, setAdded] = useState<string[]>([]);
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return setErr('제목을 적어주세요.');
-    if (url.trim() && !/^https?:\/\//.test(url.trim())) return setErr('주소는 https://로 시작해야 해요.');
-    onAdd({ title: title.trim(), creator: creator.trim(), sub: '', source_url: url.trim() || null });
-    setAdded((a) => [title.trim(), ...a]);
-    setTitle(''); setCreator(''); setUrl(''); setErr('');
-    document.getElementById('a-title')?.focus();
-  };
+type NewItem = { title: string; creator: string; sub: string; source_url: string | null; cover_url: string | null };
+type Hit = { title: string; creator: string; sub: string; cover: string | null; link: string | null };
+type AddTab = 'search' | 'link' | 'manual';
+
+async function getJSON<T>(url: string): Promise<T> {
+  let r: Response;
+  try {
+    r = await fetch(url);
+  } catch {
+    throw new Error('인터넷 연결을 확인해주세요.');
+  }
+  const body = await r.json().catch(() => ({ error: '표지 서버에 연결하지 못했어요.' }));
+  if (!r.ok) throw new Error(body.error || '문제가 생겼어요.');
+  return body as T;
+}
+
+/** 담기: 검색(알라딘·TMDB·KOPIS) / 링크로 표지 가져오기 / 직접 입력 */
+export function AddSheet({ jar, onClose, onAdd }: { jar: Jar; onClose: () => void; onAdd: (d: NewItem) => void }) {
+  const [tab, setTab] = useState<AddTab>('search');
+  const [added, setAdded] = useState<string[]>(() => jar.items.map((i) => i.title));
+  const add = (d: NewItem) => { onAdd(d); setAdded((a) => [...a, d.title]); };
+
   return (
     <Sheet onClose={onClose} label="담기">
       <h2>‘{jar.name}’에 담기</h2>
-      <p className="lead">{TYPES[jar.type].src} 표지 검색은 곧 연결돼요. 지금은 제목을 직접 적어 담아요.</p>
-      <form onSubmit={submit}>
-        <div className="field"><label htmlFor="a-title">제목</label><input id="a-title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} /></div>
-        <div className="field"><label htmlFor="a-by">만든 사람 (선택)</label><input id="a-by" maxLength={80} value={creator} onChange={(e) => setCreator(e.target.value)} /></div>
-        <div className="field"><label htmlFor="a-url">작품 페이지 주소 (선택)</label><input id="a-url" type="url" placeholder="https://" value={url} onChange={(e) => setUrl(e.target.value)} /></div>
-        {err && <p className="err">{err}</p>}
-        <div className="sheet-actions">
-          <button className="ghost" type="button" onClick={onClose}>다 담았어요</button>
-          <button className="primary" type="submit">담기</button>
-        </div>
-      </form>
-      {added.length > 0 && <p className="hint">방금 담은 것: {added.join(', ')}</p>}
+      <p className="lead">표지를 찾아 장독에 넣어요.</p>
+      <div className="tabs" role="tablist">
+        {([['search', '검색'], ['link', '링크로'], ['manual', '직접 입력']] as [AddTab, string][]).map(([k, l]) => (
+          <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>
+        ))}
+      </div>
+      {tab === 'search' && <SearchPane jar={jar} added={added} onAdd={add} />}
+      {tab === 'link' && <LinkPane onAdd={add} />}
+      {tab === 'manual' && <ManualPane onAdd={add} />}
+      <div className="sheet-actions"><button className="ghost" type="button" onClick={onClose}>다 담았어요</button></div>
     </Sheet>
+  );
+}
+
+function SearchPane({ jar, added, onAdd }: { jar: Jar; added: string[]; onAdd: (d: NewItem) => void }) {
+  const [q, setQ] = useState('');
+  const [hits, setHits] = useState<Hit[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const seq = useRef(0);
+
+  useEffect(() => {
+    const term = q.trim();
+    if (term.length < 1) { setHits(null); setErr(''); return; }
+    const my = ++seq.current;
+    const t = setTimeout(async () => {
+      setBusy(true);
+      try {
+        const r = await getJSON<{ hits: Hit[] }>(`/api/search?type=${jar.type}&q=${encodeURIComponent(term)}`);
+        if (my === seq.current) { setHits(r.hits); setErr(''); }
+      } catch (e) {
+        if (my === seq.current) { setHits(null); setErr((e as Error).message); }
+      } finally {
+        if (my === seq.current) setBusy(false);
+      }
+    }, 450);
+    return () => clearTimeout(t);
+  }, [q, jar.type]);
+
+  return (
+    <>
+      <div className="field">
+        <label htmlFor="q">{TYPES[jar.type].label} 찾기</label>
+        <input id="q" type="search" placeholder="제목이나 만든 사람" autoComplete="off" value={q} onChange={(e) => setQ(e.target.value)} />
+      </div>
+      <div className="src"><span>{TYPES[jar.type].src}에서 찾아요</span><span>{busy ? '찾는 중…' : hits ? `${hits.length}건` : ''}</span></div>
+      {err && <p className="err" role="alert">{err}</p>}
+      <div className="results">
+        {hits?.map((h, k) => {
+          const done = added.includes(h.title);
+          return (
+            <div className="result" key={`${h.link}-${k}`}>
+              <Cover it={{ title: h.title, creator: h.creator, cover_url: h.cover }} />
+              <div><b>{h.title}</b><small>{[h.creator, h.sub].filter(Boolean).join(' · ')}</small></div>
+              <button type="button" className={done ? 'added' : ''} disabled={done}
+                onClick={() => onAdd({ title: h.title, creator: h.creator, sub: h.sub, cover_url: h.cover, source_url: h.link })}>
+                {done ? '담김 ✓' : '담기'}
+              </button>
+            </div>
+          );
+        })}
+        {hits && !hits.length && <p className="hint" style={{ padding: '12px 4px' }}>찾는 작품이 없어요. ‘링크로’나 ‘직접 입력’으로 담아보세요.</p>}
+      </div>
+    </>
+  );
+}
+
+function LinkPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
+  const [url, setUrl] = useState('');
+  const [found, setFound] = useState<{ cover: string; title: string } | null>(null);
+  const [title, setTitle] = useState('');
+  const [creator, setCreator] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  const fetchCover = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!/^https?:\/\//.test(url.trim())) return setErr('https://로 시작하는 주소를 넣어주세요.');
+    setBusy(true); setErr(''); setFound(null);
+    try {
+      const r = await getJSON<{ cover: string; title: string }>(`/api/cover?url=${encodeURIComponent(url.trim())}`);
+      setFound(r); setTitle(r.title);
+    } catch (e2) {
+      setErr((e2 as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return setErr('제목을 적어주세요.');
+    onAdd({ title: title.trim(), creator: creator.trim(), sub: '', cover_url: found!.cover, source_url: url.trim() });
+    setUrl(''); setFound(null); setTitle(''); setCreator('');
+  };
+
+  return (
+    <>
+      <form onSubmit={fetchCover}>
+        <div className="field">
+          <label htmlFor="l-url">작품 페이지 주소</label>
+          <input id="l-url" type="url" placeholder="https://ridibooks.com/books/…" value={url} onChange={(e) => setUrl(e.target.value)} />
+        </div>
+        <p className="hint">리디·레진·봄툰·교보·네이버·카카오 같은 곳의 작품 페이지 주소를 붙여넣어요.</p>
+        {!found && <div className="sheet-actions"><button className="primary" type="submit" disabled={busy}>{busy ? '가져오는 중…' : '표지 가져오기'}</button></div>}
+      </form>
+      {err && <p className="err" role="alert">{err}</p>}
+      {found && (
+        <form onSubmit={submit} className="found">
+          <div className="preview"><Cover it={{ title, creator, cover_url: found.cover }} /></div>
+          <div className="field"><label htmlFor="l-title">제목</label><input id="l-title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+          <div className="field"><label htmlFor="l-by">만든 사람 (선택)</label><input id="l-by" maxLength={80} value={creator} onChange={(e) => setCreator(e.target.value)} /></div>
+          <div className="sheet-actions"><button className="primary" type="submit">담기</button></div>
+        </form>
+      )}
+    </>
+  );
+}
+
+function ManualPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
+  const [title, setTitle] = useState('');
+  const [creator, setCreator] = useState('');
+  const [err, setErr] = useState('');
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) return setErr('제목을 적어주세요.');
+    onAdd({ title: title.trim(), creator: creator.trim(), sub: '', source_url: null, cover_url: null });
+    setTitle(''); setCreator(''); setErr('');
+    document.getElementById('a-title')?.focus();
+  };
+  return (
+    <form onSubmit={submit}>
+      <div className="field"><label htmlFor="a-title">제목</label><input id="a-title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+      <div className="field"><label htmlFor="a-by">만든 사람 (선택)</label><input id="a-by" maxLength={80} value={creator} onChange={(e) => setCreator(e.target.value)} /></div>
+      <p className="hint">표지는 제목으로 만든 기본 표지가 들어가요.</p>
+      {err && <p className="err">{err}</p>}
+      <div className="sheet-actions"><button className="primary" type="submit">담기</button></div>
+    </form>
   );
 }
 
