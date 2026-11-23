@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type ClipboardEvent, type DragEvent, type FormEvent } from 'react';
 import type { Item, Jar, JarType } from '../lib/types';
 import { RATE_LABEL, TYPES } from '../lib/types';
 import { fmtDay } from '../lib/util';
@@ -170,7 +170,7 @@ export function CrackSheet({ jar, onClose, onSee }: { jar: Jar; onClose: () => v
 
 type NewItem = { title: string; creator: string; sub: string; source_url: string | null; cover_url: string | null };
 type Hit = { title: string; creator: string; sub: string; cover: string | null; link: string | null };
-type AddTab = 'search' | 'link' | 'photo' | 'manual';
+type AddTab = 'search' | 'cover' | 'manual';
 
 async function getJSON<T>(url: string): Promise<T> {
   let r: Response;
@@ -185,10 +185,10 @@ async function getJSON<T>(url: string): Promise<T> {
   return body as T;
 }
 
-/** 담기: 검색(카카오 책·TMDB·KOPIS) / 링크로 표지 가져오기 / 직접 입력 */
+/** 담기: 검색(책 종류만, 카카오) / 표지 넣기(붙여넣기·주소·사진) / 직접 입력 */
 export function AddSheet({ jar, onClose, onAdd }: { jar: Jar; onClose: () => void; onAdd: (d: NewItem) => void }) {
   const searchable = !!TYPES[jar.type].src;
-  const [tab, setTab] = useState<AddTab>(searchable ? 'search' : 'link');
+  const [tab, setTab] = useState<AddTab>(searchable ? 'search' : 'cover');
   const [added, setAdded] = useState<string[]>(() => jar.items.map((i) => i.title));
   const add = (d: NewItem) => { onAdd(d); setAdded((a) => [...a, d.title]); };
 
@@ -197,13 +197,12 @@ export function AddSheet({ jar, onClose, onAdd }: { jar: Jar; onClose: () => voi
       <h2>‘{jar.name}’에 담기</h2>
       <p className="lead">표지를 찾아 장독에 넣어요.</p>
       <div className="tabs" role="tablist">
-        {([...(searchable ? [['search', '검색']] : []), ['link', searchable ? '링크로' : '이미지 링크'], ['photo', '사진'], ['manual', '직접 입력']] as [AddTab, string][]).map(([k, l]) => (
+        {([...(searchable ? [['search', '검색']] : []), ['cover', '표지 넣기'], ['manual', '직접 입력']] as [AddTab, string][]).map(([k, l]) => (
           <button key={k} type="button" role="tab" aria-selected={tab === k} onClick={() => setTab(k)}>{l}</button>
         ))}
       </div>
       {tab === 'search' && <SearchPane jar={jar} added={added} onAdd={add} />}
-      {tab === 'link' && <LinkPane onAdd={add} imageFirst={!searchable} />}
-      {tab === 'photo' && <PhotoPane onAdd={add} />}
+      {tab === 'cover' && <CoverPane onAdd={add} video={!searchable} />}
       {tab === 'manual' && <ManualPane onAdd={add} />}
       <div className="sheet-actions"><button className="ghost" type="button" onClick={onClose}>다 담았어요</button></div>
     </Sheet>
@@ -275,129 +274,120 @@ function loadsAsImage(u: string) {
   });
 }
 
-function LinkPane({ onAdd, imageFirst }: { onAdd: (d: NewItem) => void; imageFirst: boolean }) {
-  const [url, setUrl] = useState('');
-  const [found, setFound] = useState<{ cover: string; title: string } | null>(null);
-  const [title, setTitle] = useState('');
-  const [creator, setCreator] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
+type Picked = { cover: string; source_url: string | null; title?: string; creator?: string };
 
-  const fetchCover = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!/^https?:\/\//.test(url.trim())) return setErr('https://로 시작하는 주소를 넣어주세요.');
-    setBusy(true); setErr(''); setFound(null);
-    try {
-      const u = url.trim();
-      // 1) 이미지 주소면 그대로 표지로  2) 아니면 작품 페이지에서 대표 이미지 찾기
-      if (await loadsAsImage(u)) {
-        setFound({ cover: u, title: '' }); setTitle(''); setCreator('');
-        return;
-      }
-      const r = await getJSON<{ cover: string; title: string; creator?: string }>(`/api/cover?url=${encodeURIComponent(u)}`);
-      setFound(r); setTitle(r.title); setCreator(r.creator || '');
-    } catch (e2) {
-      setErr((e2 as Error).message);
-    } finally {
-      setBusy(false);
-    }
+/**
+ * 표지 넣기 칸: 이미지 붙여넣기 · 주소 붙여넣기 · 사진 고르기 · 끌어다 놓기를 한 곳에서.
+ * 이미지(복사한 그림, data: 주소, 파일)는 줄여서 저장소에 올리고, 일반 주소는 그대로 쓰거나 페이지에서 표지를 찾아요.
+ */
+function CoverDrop({ onPicked, hint }: { onPicked: (p: Picked) => void; hint: string }) {
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState('');
+  const [err, setErr] = useState('');
+  const [over, setOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const run = async (label: string, job: () => Promise<Picked>) => {
+    setBusy(label); setErr('');
+    try { onPicked(await job()); setText(''); } catch (e) { setErr((e as Error).message); } finally { setBusy(''); }
   };
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return setErr('제목을 적어주세요.');
-    const isImg = found!.cover === url.trim();
-    onAdd({ title: title.trim(), creator: creator.trim(), sub: '', cover_url: found!.cover, source_url: isImg ? null : url.trim() });
-    setUrl(''); setFound(null); setTitle(''); setCreator('');
+  const fromFile = (f: File) => run('사진 올리는 중…', async () => ({ cover: await uploadCover(f), source_url: null }));
+  const fromText = (raw: string) => {
+    const t = raw.trim();
+    if (!t) return;
+    if (/^data:image\//i.test(t)) {
+      return run('사진 올리는 중…', async () => {
+        const blob = await (await fetch(t)).blob();
+        return { cover: await uploadCover(new File([blob], 'paste', { type: blob.type || 'image/png' })), source_url: null };
+      });
+    }
+    if (!/^https?:\/\//i.test(t)) { setErr('이미지나 https:// 로 시작하는 주소를 붙여넣어 주세요.'); return; }
+    return run('표지 불러오는 중…', async () => {
+      if (await loadsAsImage(t)) return { cover: t, source_url: null };
+      const r = await getJSON<{ cover: string; title: string; creator?: string }>(`/api/cover?url=${encodeURIComponent(t)}`);
+      return { cover: r.cover, source_url: t, title: r.title, creator: r.creator };
+    });
+  };
+  const onPaste = (e: ClipboardEvent<HTMLTextAreaElement>) => {
+    const file = Array.from(e.clipboardData.items).find((x) => x.kind === 'file' && x.type.startsWith('image/'))?.getAsFile();
+    if (file) { e.preventDefault(); fromFile(file); return; }
+    const t = e.clipboardData.getData('text');
+    if (t) { e.preventDefault(); fromText(t); }
+  };
+  const onDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); setOver(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f) return fromFile(f);
+    const t = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text');
+    if (t) fromText(t.split('\n')[0]);
   };
 
   return (
-    <>
-      <form onSubmit={fetchCover}>
-        <div className="field">
-          <label htmlFor="l-url">{imageFirst ? '포스터 이미지 주소' : '작품 페이지 또는 이미지 주소'}</label>
-          <input id="l-url" type="url" placeholder="https://" value={url}
-            onChange={(e) => { setUrl(e.target.value); setFound(null); setErr(''); }} />
-        </div>
-        <p className="hint">
-          {imageFirst
-            ? '포스터 이미지를 길게 눌러(PC는 오른쪽 클릭) ‘이미지 주소 복사’를 한 뒤 붙여넣어요.'
-            : '리디·레진·네이버 웹툰·카카오웹툰·교보·YES24 작품 페이지 주소나, 표지 이미지 주소를 붙여넣어요.'}
-        </p>
-        {!found && <div className="sheet-actions"><button className="primary" type="submit" disabled={busy}>{busy ? '가져오는 중…' : imageFirst ? '포스터 불러오기' : '표지 가져오기'}</button></div>}
-      </form>
+    <div className={`drop ${over ? 'over' : ''}`} onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={onDrop}>
+      <label htmlFor="paste" className="drop-label">표지 넣기</label>
+      <textarea
+        id="paste" className="paste-box" rows={2} value={text} disabled={!!busy}
+        placeholder={busy || '여기를 눌러 붙여넣기 (이미지 또는 주소)'}
+        onPaste={onPaste} onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); fromText(text); } }}
+      />
+      <div className="drop-actions">
+        {text.trim() && <button className="ghost" type="button" disabled={!!busy} onClick={() => fromText(text)}>불러오기</button>}
+        <button className="ghost" type="button" disabled={!!busy} onClick={() => fileRef.current?.click()}>사진 고르기</button>
+        <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) fromFile(f); e.target.value = ''; }} />
+      </div>
+      <p className="hint">{hint}</p>
       {err && <p className="err" role="alert">{err}</p>}
-      {found && (
-        <form onSubmit={submit} className="found">
-          <div className="preview"><Cover it={{ title, creator, cover_url: found.cover }} /></div>
-          <div className="field"><label htmlFor="l-title">제목</label><input id="l-title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} /></div>
-          <div className="field"><label htmlFor="l-by">만든 사람 (선택)</label><input id="l-by" maxLength={80} value={creator} onChange={(e) => setCreator(e.target.value)} /></div>
-          <div className="sheet-actions"><button className="primary" type="submit">담기</button></div>
-        </form>
-      )}
-    </>
+    </div>
   );
 }
 
-/** 사진 고르기 → 줄여서 올리고 주소를 받아요 */
-function useCoverUpload() {
-  const [cover, setCover] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
-  const pick = async (file: File | undefined) => {
-    if (!file) return;
-    setBusy(true); setErr('');
-    try { setCover(await uploadCover(file)); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
-  };
-  return { cover, setCover, busy, err, setErr, pick };
-}
+const COVER_HINT_VIDEO = '포스터를 길게 눌러(PC는 오른쪽 클릭) ‘이미지 복사’ 후 위 칸에 붙여넣으면 끝이에요. 캡처한 사진은 ‘사진 고르기’로 넣어요.';
+const COVER_HINT_BOOK = '표지 이미지를 복사해 붙여넣거나, 리디·레진·네이버 웹툰·카카오웹툰·교보·YES24 작품 페이지 주소를 붙여넣어요. 사진은 ‘사진 고르기’로.';
 
-function PhotoPane({ onAdd }: { onAdd: (d: NewItem) => void }) {
-  const up = useCoverUpload();
+function CoverPane({ onAdd, video }: { onAdd: (d: NewItem) => void; video: boolean }) {
+  const [picked, setPicked] = useState<Picked | null>(null);
   const [title, setTitle] = useState('');
   const [creator, setCreator] = useState('');
+  const [err, setErr] = useState('');
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (!up.cover) return up.setErr('표지 사진을 골라주세요.');
-    if (!title.trim()) return up.setErr('제목을 적어주세요.');
-    onAdd({ title: title.trim(), creator: creator.trim(), sub: '', source_url: null, cover_url: up.cover });
-    up.setCover(null); setTitle(''); setCreator('');
+    if (!title.trim()) return setErr('제목을 적어주세요.');
+    onAdd({ title: title.trim(), creator: creator.trim(), sub: '', cover_url: picked!.cover, source_url: picked!.source_url });
+    setPicked(null); setTitle(''); setCreator(''); setErr('');
   };
+  if (!picked) {
+    return <CoverDrop hint={video ? COVER_HINT_VIDEO : COVER_HINT_BOOK}
+      onPicked={(p) => { setPicked(p); setTitle(p.title || ''); setCreator(p.creator || ''); setTimeout(() => document.getElementById('c-title')?.focus()); }} />;
+  }
   return (
-    <form onSubmit={submit}>
-      <div className="field">
-        <label htmlFor="u-file">표지 사진</label>
-        <input id="u-file" type="file" accept="image/*" onChange={(e) => up.pick(e.target.files?.[0])} />
-        <p className="hint">책 표지를 찍거나 캡처한 사진을 골라요. 자동으로 알맞은 크기로 줄여요.</p>
+    <form onSubmit={submit} className="found">
+      <div className="found-row">
+        <div className="preview"><Cover it={{ title, creator, cover_url: picked.cover }} /></div>
+        <button className="link" type="button" onClick={() => setPicked(null)}>다른 표지로</button>
       </div>
-      {up.busy && <p className="hint">사진 올리는 중…</p>}
-      {up.cover && <div className="preview"><Cover it={{ title, creator, cover_url: up.cover }} /></div>}
-      <div className="field"><label htmlFor="u-title">제목</label><input id="u-title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} /></div>
-      <div className="field"><label htmlFor="u-by">만든 사람 (선택)</label><input id="u-by" maxLength={80} value={creator} onChange={(e) => setCreator(e.target.value)} /></div>
-      {up.err && <p className="err" role="alert">{up.err}</p>}
-      <div className="sheet-actions"><button className="primary" type="submit" disabled={up.busy}>담기</button></div>
+      <div className="field"><label htmlFor="c-title">제목</label><input id="c-title" maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+      <div className="field"><label htmlFor="c-by">{video ? '감독·출연 (선택)' : '만든 사람 (선택)'}</label><input id="c-by" maxLength={80} value={creator} onChange={(e) => setCreator(e.target.value)} /></div>
+      {err && <p className="err">{err}</p>}
+      <div className="sheet-actions"><button className="primary" type="submit">담기</button></div>
     </form>
   );
 }
 
 /** 이미 담긴 작품의 표지 바꾸기 */
 export function CoverSheet({ it, onClose, onSave }: { it: Item; onClose: () => void; onSave: (cover: string | null) => void }) {
-  const up = useCoverUpload();
-  const shown = up.cover ?? it.cover_url;
+  const [cover, setCover] = useState<string | null>(null);
+  const shown = cover ?? it.cover_url;
   return (
     <Sheet onClose={onClose} label="표지 바꾸기">
       <h2>표지 바꾸기</h2>
       <p className="lead">{it.title}</p>
       <div className="preview"><Cover it={{ title: it.title, creator: it.creator, cover_url: shown }} /></div>
-      <div className="field">
-        <label htmlFor="c-file">새 표지 사진</label>
-        <input id="c-file" type="file" accept="image/*" onChange={(e) => up.pick(e.target.files?.[0])} />
-      </div>
-      {up.busy && <p className="hint">사진 올리는 중…</p>}
-      {up.err && <p className="err" role="alert">{up.err}</p>}
+      <CoverDrop hint="새 표지 이미지를 복사해 붙여넣거나, 주소를 붙여넣거나, ‘사진 고르기’로 골라요." onPicked={(p) => setCover(p.cover)} />
       <div className="sheet-actions">
         {it.cover_url && <button className="ghost" type="button" onClick={() => onSave(null)}>기본 표지로</button>}
         <button className="ghost" type="button" onClick={onClose}>취소</button>
-        <button className="primary" type="button" disabled={!up.cover || up.busy} onClick={() => onSave(up.cover)}>저장</button>
+        <button className="primary" type="button" disabled={!cover} onClick={() => onSave(cover)}>저장</button>
       </div>
     </Sheet>
   );

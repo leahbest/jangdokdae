@@ -275,3 +275,11 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .move:disabled{opacity:.3;cursor:default}
 .pos{min-width:28px;text-align:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .cover-btn:disabled{cursor:default}
+.drop{border:1.5px dashed var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--brand);background:var(--brand-tint)}
+.drop-label{font-size:13px;font-weight:500;color:var(--muted)}
+.paste-box{width:100%;border:1px solid var(--line);border-radius:10px;padding:14px 12px;background:var(--bg);resize:none;font-size:15px;text-align:center}
+.paste-box::placeholder{color:var(--muted)}
+.drop-actions{display:flex;gap:8px;flex-wrap:wrap}
+.drop-actions .ghost{flex:1}
+.found-row{display:flex;align-items:flex-end;gap:12px}
