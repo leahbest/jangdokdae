@@ -283,3 +283,27 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .drop-actions{display:flex;gap:8px;flex-wrap:wrap}
 .drop-actions .ghost{flex:1}
 .found-row{display:flex;align-items:flex-end;gap:12px}
+/* 이용방법 */
+.help-btn{font-weight:700;font-size:16px;color:var(--brand);border-color:var(--brand-tint);background:var(--brand-tint)}
+.help-head{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.help-head svg{width:40px;height:42px;flex:none}
+.help-head .lead{margin:2px 0 0}
+.help-list{display:flex;flex-direction:column;gap:8px}
+.help-step{border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.help-step[open]{background:var(--surface)}
+.help-step summary{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;font-weight:600;list-style:none}
+.help-step summary::-webkit-details-marker{display:none}
+.help-step summary::after{content:"＋";margin-left:auto;color:var(--muted);font-weight:400}
+.help-step[open] summary::after{content:"－"}
+.help-ico{width:28px;height:28px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--brand-tint)}
+.help-ico svg{width:17px;height:18px}
+.help-ladle{display:grid;place-items:center;color:var(--brand)}
+.help-emoji{font-size:15px;line-height:1}
+.help-body{padding:0 14px 12px;font-size:14px;display:flex;flex-direction:column;gap:8px}
+.help-body p{margin:0}
+.help-body .star-ico{vertical-align:-1px}
+.help-tip{color:var(--muted);font-size:13px}
+.help-card{background:var(--well);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.help-card h4{margin:0;font-size:14px}
+.help-ways{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.pill{display:inline-block;font-size:11px;font-weight:600;color:var(--done);background:var(--done-bg);border-radius:999px;padding:1px 7px;vertical-align:1px}

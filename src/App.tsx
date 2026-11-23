@@ -11,6 +11,7 @@ import { LadleIcon, Logo } from './components/visuals';
 import {
   AddSheet, CoverSheet, CrackSheet, ItemMenuSheet, JarMenuSheet, LadleSheet, MemoSheet, NewJarSheet, RatingSheet,
 } from './components/sheets';
+import { HelpSheet } from './components/Help';
 import { Home } from './screens/Home';
 import { JarScreen } from './screens/JarScreen';
 import { Report } from './screens/Report';
@@ -56,7 +57,7 @@ function parse(h: string): Route {
 
 type SheetState =
   | { k: 'newJar' } | { k: 'item'; id: string } | { k: 'rate'; id: string } | { k: 'memo'; id: string } | { k: 'cover'; id: string }
-  | { k: 'jarMenu' } | { k: 'crack'; jarId: string } | { k: 'add' } | { k: 'ladle' } | { k: 'account' } | null;
+  | { k: 'jarMenu' } | { k: 'crack'; jarId: string } | { k: 'add' } | { k: 'ladle' } | { k: 'account' } | { k: 'help' } | null;
 
 function Main({ store, account, onShowCode }: { store: Store; account: string | null; onShowCode: (c: string) => void }) {
   const toast = useToast();
@@ -65,6 +66,16 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
   const [route, setRoute] = useState<Route>(() => parse(location.hash));
   const [sheet, setSheetRaw] = useState<SheetState>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
+
+  // 처음 들어온 사람에게는 이용방법을 한 번 보여줘요.
+  useEffect(() => {
+    try {
+      if (!localStorage.getItem('jangdokdae-help-seen')) {
+        localStorage.setItem('jangdokdae-help-seen', '1');
+        setSheetRaw({ k: 'help' });
+      }
+    } catch { /* 저장소를 못 쓰면 그냥 넘어가요 */ }
+  }, []);
 
   useEffect(() => {
     const on = () => { setRoute(parse(location.hash)); setFocusId(null); };
@@ -124,6 +135,7 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
       )}
       <div className="head-actions">
         {view.name === 'home' && <button className="ghost" type="button" onClick={() => nav('report')}>이달의 리포트</button>}
+        <button className="icon-btn help-btn" type="button" onClick={() => openSheet({ k: 'help' })} aria-label="이용방법">?</button>
         <button className="ghost" type="button" onClick={() => openSheet({ k: 'account' })}>{account ?? '체험 모드'}</button>
       </div>
     </header>
@@ -211,6 +223,7 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
       {s?.k === 'ladle' && (
         <LadleSheet jars={jars} onClose={close} onGo={(jarId, itemId) => { close(); setFocusId(itemId); nav(`jar-${jarId}`); setTimeout(() => setFocusId(itemId)); }} />
       )}
+      {s?.k === 'help' && <HelpSheet onClose={close} />}
       {s?.k === 'account' && (
         <AccountSheet account={account} onClose={close} onShowCode={(c) => { close(); onShowCode(c); }} />
       )}
