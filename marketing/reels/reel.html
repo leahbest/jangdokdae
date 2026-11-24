@@ -52,6 +52,15 @@ html,body{margin:0;background:#000}
     <div class="cap small" id="c2b" style="top:1340px;font-size:46px;color:var(--ink)">(집에 이미 있음 🙃)</div>
   </div>
 
+  <!-- 2-b. 쌓아둔 건 이만큼인데 사고 싶은 책이 또 -->
+  <div class="layer" id="L2b">
+    <div class="cap" id="c2c" style="top:260px;font-size:84px">쌓아둔 건 이만큼인데…</div>
+    <div class="cap" id="c2d" style="top:400px;font-size:84px;color:var(--brand)">사고 싶은 책이<br>또 늘었다 🛒</div>
+    <div id="cart" style="position:absolute;left:50%;top:700px;transform:translateX(-50%);font:700 44px var(--body);background:#fff;border:4px solid var(--brand);color:var(--brand);border-radius:999px;padding:16px 40px;white-space:nowrap">🛒 장바구니 <span id="cartN">3</span>권</div>
+    <div id="pile2"></div>
+    <div id="wish"></div>
+  </div>
+
   <!-- 3. 그래서 직접 만들었어요 -->
   <div class="layer" id="L3" style="background:var(--cream)">
     <div class="cap" id="c3a" style="top:430px;font-size:92px">그래서 그냥<br>직접 만들었어요</div>
@@ -94,10 +103,10 @@ html,body{margin:0;background:#000}
 
   <!-- 6. 끝 화면 -->
   <div class="layer" id="L6">
-    <div class="cap" id="c6a" style="top:330px;font-size:92px">묵혀둔 책,<br>같이 깨실 분? 🙋</div>
-    <div style="position:absolute;left:0;right:0;top:820px;text-align:center" id="c6b">
-      <img src="../cardnews/appicon.png" style="width:220px;height:220px;border-radius:52px;box-shadow:0 18px 40px rgba(0,0,0,.18)" alt="">
-      <div style="font:700 64px var(--disp);margin-top:26px">장독대</div>
+    <div class="cap" id="c6a" style="top:360px;font-size:120px">같이<br>깨실 분? 🙋</div>
+    <div style="position:absolute;left:0;right:0;top:900px;text-align:center" id="c6b">
+      <img src="../cardnews/appicon.png" style="width:170px;height:170px;border-radius:40px;box-shadow:0 18px 40px rgba(0,0,0,.18)" alt="">
+      <div style="font:700 56px var(--disp);margin-top:22px">장독대</div>
       <div style="font:500 36px var(--body);color:var(--muted);margin-top:8px">앱 출시 전, 웹에서 바로 써보기</div>
       <div class="url">jangdokdae-nine.vercel.app</div>
       <div style="font:500 32px var(--body);color:var(--muted);margin-top:26px">홈 화면에 추가하면 앱처럼 열려요</div>
@@ -120,6 +129,18 @@ for(let i=0;i<14;i++){
   pile.insertAdjacentHTML('beforeend',cover(i,TITLES[i],true).replace('class="cv','data-i="'+i+'" class="cv'));
   PILE.push({el:pile.lastElementChild,x,y,r,t0:0.35+i*0.16});
 }
+// 2-b: 쌓인 더미(정지) + 날아오는 사고 싶은 책
+const pile2=document.getElementById('pile2');
+for(let i=0;i<14;i++){const col=i%4,row=Math.floor(i/4);
+  const x=95+col*230+(row%2)*60+((i*37)%30-15), y=1440-row*170-((i*53)%40), r=((i*71)%22)-11;
+  pile2.insertAdjacentHTML('beforeend',cover(i,TITLES[i],true));
+  const el=pile2.lastElementChild; el.style.transform=`translate(${x}px,${y}px) rotate(${r}deg)`;}
+const wish=document.getElementById('wish'), WISH=[];
+const WT=['채식주의자','소년이 온다','작별하지 않는다','불편한 편의점','아몬드'];
+WT.forEach((title,i)=>{wish.insertAdjacentHTML('beforeend',cover(3+i*2,title,false));const el=wish.lastElementChild;
+  el.style.width='190px';el.style.height='285px';el.style.fontSize='26px';
+  WISH.push({el,x:40+i*205,y:880+(i%2)*40,r:(i%2?6:-6),t0:7.4+i*0.24});});
+
 // 4: 휴대폰 속 표지
 const grid=document.getElementById('grid');
 const G=[0,5,9,2,11,3];
@@ -134,11 +155,21 @@ const back=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(
 const show=(el,t,a,b,fade=.25)=>{el.style.opacity=Math.min(lin(t,a,a+fade),1-lin(t,b-fade,b));};
 const rise=(el,t,a,dist=40)=>{const k=easeOut(lin(t,a,a+.45));el.style.transform=`translateY(${(1-k)*dist}px)`;const o=parseFloat(el.style.opacity);el.style.opacity=Math.min(isNaN(o)?1:o,k);};
 
-const DUR=21;
+const DUR=24;
 function render(t){
+  const u=t-3; // 새 장면(6~9초) 뒤로는 3초씩 밀려요
   // 장면 구간
-  show($('L1'),t,0,3.2,.2); show($('L2'),t,3.0,6.2,.25); show($('L3'),t,6.0,9.2,.25);
-  show($('L4'),t,9.0,14.2,.25); show($('L5'),t,14.0,17.4,.25); show($('L6'),t,17.2,DUR+1,.3);
+  show($('L1'),t,0,3.2,.2); show($('L2'),t,3.0,6.2,.25); show($('L2b'),t,6.0,9.2,.25); show($('L3'),u,6.0,9.2,.25);
+  show($('L4'),u,9.0,14.2,.25); show($('L5'),u,14.0,17.4,.25); show($('L6'),u,17.2,DUR+1,.3);
+
+  // 2-b
+  $('c2c').style.opacity=1; rise($('c2c'),t,6.1);
+  $('c2d').style.opacity=lin(t,7.1,7.4); rise($('c2d'),t,7.1,30);
+  const cn=3+Math.round(5*lin(t,7.4,8.6)); $('cartN').textContent=cn;
+  const cb=t>7.4&&t<8.8?1+0.06*Math.abs(Math.sin((t-7.4)*Math.PI/0.24)):1;
+  $('cart').style.opacity=lin(t,7.2,7.4); $('cart').style.transform=`translateX(-50%) scale(${cb})`;
+  WISH.forEach(w=>{const k=lin(t,w.t0,w.t0+.4),e=back(k);w.el.style.opacity=k>0?1:0;
+    w.el.style.transform=`translate(${w.x+(1-e)*700}px,${w.y-(1-e)*200}px) rotate(${w.r*e+(1-e)*30}deg)`;});
 
   // 1
   $('c1a').style.opacity=1; rise($('c1a'),t,0.05);
@@ -153,6 +184,7 @@ function render(t){
   $('dupB').classList.toggle('gray',t<4.9);
   $('c2b').style.opacity=lin(t,4.7,5.0); rise($('c2b'),t,4.7,24);
 
+  t=u; // 여기부터는 밀린 시간으로
   // 3
   $('c3a').style.opacity=1; rise($('c3a'),t,6.1);
   const lp=back(lin(t,6.8,7.3)); $('logo').style.transform=`scale(${.4+.6*lp})`; $('logo').style.opacity=lin(t,6.8,7.0);
