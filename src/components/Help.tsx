@@ -98,6 +98,7 @@ export function HelpSheet({ onClose }: { onClose: () => void }) {
         </Step>
       </div>
 
+      <p className="legal-links"><a href="/privacy.html">개인정보처리방침</a> · <a href="/terms.html">이용약관</a> · 문의 leah_0215@naver.com</p>
       <div className="sheet-actions"><button className="primary" type="button" onClick={onClose}>알겠어요</button></div>
     </Sheet>
   );

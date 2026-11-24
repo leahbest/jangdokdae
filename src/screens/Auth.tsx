@@ -84,6 +84,9 @@ export function AuthScreen({ onSignedUp }: { onSignedUp: (code: string) => void 
           {mode === 'reset' && <button type="button" className="link" onClick={() => switchTo('login')}>← 로그인으로</button>}
         </div>
       </div>
+      <p className="legal-links">
+        {mode === 'signup' ? '가입하면 ' : ''}<a href="/terms.html">이용약관</a> · <a href="/privacy.html">개인정보처리방침</a>{mode === 'signup' ? '에 동의하게 돼요.' : ''}
+      </p>
     </main>
   );
 }
