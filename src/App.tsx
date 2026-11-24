@@ -131,9 +131,9 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
         <button className="logo" type="button" onClick={() => nav('')}><Logo /><b>장독대</b></button>
       )}
       <div className="head-actions">
-        {view.name === 'home' && <button className="ghost" type="button" onClick={() => nav('report')}>이달의 리포트</button>}
+        {view.name === 'home' && <button className="ghost" type="button" onClick={() => nav('report')} aria-label="이달의 리포트"><span className="wide-only">이달의 </span>리포트</button>}
         <button className="icon-btn help-btn" type="button" onClick={() => openSheet({ k: 'help' })} aria-label="이용방법">?</button>
-        <button className="ghost" type="button" onClick={() => openSheet({ k: 'account' })}>{account ?? '체험 모드'}</button>
+        <button className="ghost account-btn" type="button" onClick={() => openSheet({ k: 'account' })}>{account ?? '체험 모드'}</button>
       </div>
     </header>
   );

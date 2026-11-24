@@ -27,7 +27,7 @@ export function Cover({ it, className = '' }: { it: { title: string; creator: st
   const h = hash(it.title);
   const [c1, c2] = PAL[h % PAL.length];
   return (
-    <div className={`art gen v${(h >> 4) % 4} ${className}`} style={{ '--c1': c1, '--c2': c2 } as CSSProperties}>
+    <div className={`art gen v${(h >>> 4) % 4} ${className}`} style={{ '--c1': c1, '--c2': c2 } as CSSProperties}>
       <span className="ct">{it.title}</span>
       <span className="cb">{it.creator}</span>
     </div>
