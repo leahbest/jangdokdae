@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* 장독대 릴스: 1080x1920, render(t)로 프레임마다 그려요. 인스타 UI에 가리지 않게 위 200px·아래 340px은 비워둬요. */
+:root{--paper:#fbf8f4;--cream:#f4ece2;--ink:#2a231d;--muted:#8a7f74;--brand:#6e4a33;--tint:#ecdfd2;--green:#2e9a58;
+  --disp:"Gowun Batang",serif;--body:"IBM Plex Sans KR",sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:#000}
+#stage{width:1080px;height:1920px;position:relative;overflow:hidden;background:var(--paper);font-family:var(--body);color:var(--ink)}
+.layer{position:absolute;inset:0;opacity:0}
+.cap{position:absolute;left:80px;right:80px;text-align:center;font-family:var(--disp);font-weight:700;line-height:1.25;letter-spacing:-.01em}
+.small{font-family:var(--body);font-weight:500;color:var(--muted)}
+.cv{position:absolute;width:220px;height:330px;border-radius:8px;overflow:hidden;box-shadow:0 14px 30px rgba(40,25,10,.22);display:flex;flex-direction:column;justify-content:flex-end;padding:18px;color:#fff;font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.2}
+.cv::before{content:"";position:absolute}
+.cv span{position:relative}
+.v0::before{inset:0 0 auto 0;height:40%;background:var(--c2)}
+.v1::before{width:72%;aspect-ratio:1;border-radius:50%;top:10%;left:14%;background:var(--c2)}
+.v2::before{inset:0;background:linear-gradient(152deg,var(--c2) 0 44%,transparent 44.2%)}
+.v3::before{inset:8% 8% auto 8%;height:4px;background:var(--c2);box-shadow:0 12px 0 var(--c2)}
+.gray{filter:grayscale(1) contrast(.9) brightness(1.08)}
+.badge{position:absolute;top:10px;right:10px;width:54px;height:54px;border-radius:50%;background:#fff;color:var(--green);display:grid;place-items:center;font:700 32px var(--body);box-shadow:0 4px 10px rgba(0,0,0,.2)}
+.phone{position:absolute;left:190px;top:470px;width:700px;height:1240px;border-radius:84px;background:#1f1a16;padding:20px;box-shadow:0 40px 90px rgba(60,40,25,.3)}
+.screen{width:100%;height:100%;border-radius:66px;background:var(--paper);overflow:hidden;position:relative;padding:70px 44px}
+.screen h4{margin:0;font-family:var(--disp);font-size:52px}
+.chip{display:inline-block;font-size:24px;padding:4px 16px;border-radius:999px;background:var(--tint);color:var(--brand);font-weight:600;margin-bottom:14px}
+.bar{height:10px;border-radius:6px;background:#eee7df;margin:18px 0 8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);border-radius:6px}
+.cnt{font-size:26px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:34px}
+.slot{position:relative;background:#f1ece6;border-radius:18px;padding:16px;height:290px}
+.slot .cv{position:relative;width:100%;height:100%;font-size:22px;padding:12px;box-shadow:0 6px 14px rgba(0,0,0,.18)}
+.ripple{position:absolute;width:160px;height:160px;border-radius:50%;border:6px solid var(--brand);pointer-events:none;opacity:0}
+.jar{position:absolute;left:340px;top:600px;width:400px;height:416px}
+.logo-row{display:flex;align-items:center;justify-content:center;gap:22px;font-family:var(--disp);font-weight:700;font-size:96px;color:var(--brand)}
+.url{display:inline-block;margin-top:30px;padding:26px 40px;border-radius:26px;background:#fff;border:4px solid var(--brand);font:700 44px var(--body);color:var(--brand)}
+</style></head><body>
+<div id="stage">
+
+  <!-- 1. 책 사는 속도 > 읽는 속도 -->
+  <div class="layer" id="L1">
+    <div class="cap" id="c1a" style="top:250px;font-size:96px">책 사는 속도 &gt;<br>읽는 속도</div>
+    <div class="cap small" id="c1b" style="top:520px;font-size:40px">읽는 속도가 사는 속도를 못 따라가요 📚</div>
+    <div id="pile"></div>
+  </div>
+
+  <!-- 2. 이 책 샀었나? -->
+  <div class="layer" id="L2">
+    <div class="cap" id="c2a" style="top:300px;font-size:88px">서점에서…<br>"이 책 샀었나?"</div>
+    <div class="cv v1 gray" id="dupA" style="left:230px;top:820px;width:290px;height:435px;font-size:40px;--c1:#2b2d42;--c2:#8ecae6;background:#2b2d42"><span>밤의<br>도서관</span></div>
+    <div class="cv v1" id="dupB" style="left:560px;top:820px;width:290px;height:435px;font-size:40px;background:#2b2d42;--c2:#8ecae6"><span>밤의<br>도서관</span></div>
+    <div class="cap small" id="c2b" style="top:1340px;font-size:46px;color:var(--ink)">(집에 이미 있음 🙃)</div>
+  </div>
+
+  <!-- 3. 그래서 직접 만들었어요 -->
+  <div class="layer" id="L3" style="background:var(--cream)">
+    <div class="cap" id="c3a" style="top:430px;font-size:92px">그래서 그냥<br>직접 만들었어요</div>
+    <div class="logo-row" id="logo" style="position:absolute;left:0;right:0;top:900px">
+      <svg viewBox="0 0 100 104" width="150" height="156"><path d="M32 20 C14 28 8 52 14 74 C18 90 30 97 50 97 C70 97 82 90 86 74 C92 52 86 28 68 20 Z" fill="currentColor"/><rect x="31" y="11" width="38" height="10" rx="3" fill="currentColor"/></svg>장독대
+    </div>
+    <div class="cap small" id="c3b" style="top:1150px;font-size:42px">사둔 책·보고 싶은 것 묵혀두는 내 장독</div>
+  </div>
+
+  <!-- 4. 흑백 → 컬러 -->
+  <div class="layer" id="L4">
+    <div class="cap" id="c4a" style="top:220px;font-size:76px">사두고 안 읽은 건 <span style="color:#9a948d">흑백</span></div>
+    <div class="cap" id="c4b" style="top:220px;font-size:76px">다 읽으면 <span style="color:var(--brand)">컬러</span>로 콕!</div>
+    <div class="phone" id="phone"><div class="screen">
+      <span class="chip">책</span>
+      <h4>올해 산 책</h4>
+      <div class="bar"><i id="bar" style="width:0%"></i></div>
+      <div class="cnt" id="cnt">완료 0 / 6 · 남은 6</div>
+      <div class="grid" id="grid"></div>
+      <div class="ripple" id="ripple"></div>
+    </div></div>
+  </div>
+
+  <!-- 5. 내년엔 다 깬다 -->
+  <div class="layer" id="L5" style="background:var(--cream)">
+    <div class="cap" id="c5a" style="top:260px;font-size:64px">내 장독에 묵혀둔 책</div>
+    <div class="cap" id="c5n" style="top:360px;font-size:150px;color:var(--brand)">0권</div>
+    <svg class="jar" id="jar" viewBox="0 0 100 104">
+      <defs><clipPath id="jc"><path d="M32 20 C14 28 8 52 14 74 C18 90 30 97 50 97 C70 97 82 90 86 74 C92 52 86 28 68 20 Z"/></clipPath></defs>
+      <path d="M32 20 C14 28 8 52 14 74 C18 90 30 97 50 97 C70 97 82 90 86 74 C92 52 86 28 68 20 Z" fill="#fff"/>
+      <rect id="fill" x="0" y="98" width="100" height="104" clip-path="url(#jc)" fill="#6e4a33"/>
+      <path d="M32 20 C14 28 8 52 14 74 C18 90 30 97 50 97 C70 97 82 90 86 74 C92 52 86 28 68 20 Z" fill="none" stroke="#2a231d" stroke-width="2.4"/>
+      <rect x="31" y="11" width="38" height="10" rx="3" fill="#fff" stroke="#2a231d" stroke-width="2.4"/>
+      <path id="crack1" d="M53 21 L45 39 L57 51 L46 66 L55 80 L50 96" fill="none" stroke="#2a231d" stroke-width="3" stroke-linejoin="round" stroke-dasharray="100" stroke-dashoffset="100"/>
+      <path id="crack2" d="M57 51 L74 57" fill="none" stroke="#2a231d" stroke-width="3" stroke-dasharray="30" stroke-dashoffset="30"/>
+    </svg>
+    <div class="cap" id="c5b" style="top:1110px;font-size:84px">내년엔 진짜<br>다 깬다 🔨</div>
+    <div class="cap" id="c5c" style="top:700px;font-size:130px;color:#c4382c;text-shadow:0 0 0 #fff,-6px -6px 0 #fff,6px -6px 0 #fff,-6px 6px 0 #fff,6px 6px 0 #fff,0 8px 0 #fff,0 -8px 0 #fff,8px 0 0 #fff,-8px 0 0 #fff,0 14px 28px rgba(0,0,0,.18)">쨍그랑!</div>
+  </div>
+
+  <!-- 6. 끝 화면 -->
+  <div class="layer" id="L6">
+    <div class="cap" id="c6a" style="top:330px;font-size:92px">묵혀둔 책,<br>같이 깨실 분? 🙋</div>
+    <div style="position:absolute;left:0;right:0;top:820px;text-align:center" id="c6b">
+      <img src="../cardnews/appicon.png" style="width:220px;height:220px;border-radius:52px;box-shadow:0 18px 40px rgba(0,0,0,.18)" alt="">
+      <div style="font:700 64px var(--disp);margin-top:26px">장독대</div>
+      <div style="font:500 36px var(--body);color:var(--muted);margin-top:8px">앱 출시 전, 웹에서 바로 써보기</div>
+      <div class="url">jangdokdae-nine.vercel.app</div>
+      <div style="font:500 32px var(--body);color:var(--muted);margin-top:26px">홈 화면에 추가하면 앱처럼 열려요</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PAL=[['#2f4858','#e9c46a'],['#7a2e2e','#f2d0a4'],['#1f3b2c','#a7c4a0'],['#3d2c5e','#f4a6a6'],['#8a4b14','#f6e7c1'],['#123c69','#ee6c4d'],['#4a3728','#d9b48f'],['#20524a','#f7d08a'],['#5c1a3b','#f1b5cb'],['#2b2d42','#8ecae6'],['#6b3e26','#ffc857'],['#1b4332','#ffb4a2']];
+const TITLES=['데미안','1984','이방인','변신','노인과 바다','백년의 고독','어린 왕자','죄와 벌','파우스트','동물농장','위대한 개츠비','호밀밭의 파수꾼','달과 6펜스','오만과 편견'];
+const cover=(i,title,gray)=>`<div class="cv v${i%4}${gray?' gray':''}" style="background:${PAL[i%12][0]};--c2:${PAL[i%12][1]}"><span>${title}</span></div>`;
+
+// 1: 쌓이는 책 더미
+const pile=document.getElementById('pile');
+const PILE=[];
+for(let i=0;i<14;i++){
+  const col=i%4, row=Math.floor(i/4);
+  const x=95+col*230+(row%2)*60+((i*37)%30-15), y=1440-row*170-((i*53)%40);
+  const r=((i*71)%22)-11;
+  pile.insertAdjacentHTML('beforeend',cover(i,TITLES[i],true).replace('class="cv','data-i="'+i+'" class="cv'));
+  PILE.push({el:pile.lastElementChild,x,y,r,t0:0.35+i*0.16});
+}
+// 4: 휴대폰 속 표지
+const grid=document.getElementById('grid');
+const G=[0,5,9,2,11,3];
+G.forEach((k,n)=>grid.insertAdjacentHTML('beforeend',`<div class="slot">${cover(k,TITLES[k],true)}</div>`));
+const slots=[...grid.querySelectorAll('.slot')];
+
+const $=id=>document.getElementById(id);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lin=(t,a,b)=>clamp((t-a)/(b-a));
+const easeOut=x=>1-Math.pow(1-x,3);
+const back=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2);};
+const show=(el,t,a,b,fade=.25)=>{el.style.opacity=Math.min(lin(t,a,a+fade),1-lin(t,b-fade,b));};
+const rise=(el,t,a,dist=40)=>{const k=easeOut(lin(t,a,a+.45));el.style.transform=`translateY(${(1-k)*dist}px)`;const o=parseFloat(el.style.opacity);el.style.opacity=Math.min(isNaN(o)?1:o,k);};
+
+const DUR=21;
+function render(t){
+  // 장면 구간
+  show($('L1'),t,0,3.2,.2); show($('L2'),t,3.0,6.2,.25); show($('L3'),t,6.0,9.2,.25);
+  show($('L4'),t,9.0,14.2,.25); show($('L5'),t,14.0,17.4,.25); show($('L6'),t,17.2,DUR+1,.3);
+
+  // 1
+  $('c1a').style.opacity=1; rise($('c1a'),t,0.05);
+  $('c1b').style.opacity=lin(t,1.2,1.6); rise($('c1b'),t,1.2,20);
+  PILE.forEach(p=>{const k=lin(t,p.t0,p.t0+.42),e=back(k);p.el.style.opacity=k>0?1:0;
+    p.el.style.transform=`translate(${p.x}px,${-500+(p.y+500)*e}px) rotate(${p.r*e}deg)`;});
+
+  // 2
+  $('c2a').style.opacity=1; rise($('c2a'),t,3.1);
+  const sh=lin(t,3.9,4.6); const wob=Math.sin(sh*Math.PI*6)*(1-sh)*9;
+  $('dupA').style.transform=`rotate(${-4+wob}deg)`; $('dupB').style.transform=`rotate(${4-wob}deg)`;
+  $('dupB').classList.toggle('gray',t<4.9);
+  $('c2b').style.opacity=lin(t,4.7,5.0); rise($('c2b'),t,4.7,24);
+
+  // 3
+  $('c3a').style.opacity=1; rise($('c3a'),t,6.1);
+  const lp=back(lin(t,6.8,7.3)); $('logo').style.transform=`scale(${.4+.6*lp})`; $('logo').style.opacity=lin(t,6.8,7.0);
+  $('c3b').style.opacity=lin(t,7.5,7.9); rise($('c3b'),t,7.5,20);
+
+  // 4
+  $('c4a').style.opacity=Math.min(lin(t,9.1,9.4),1-lin(t,11.0,11.25));
+  $('c4b').style.opacity=lin(t,11.25,11.5);
+  const pin=easeOut(lin(t,9.0,9.6)); $('phone').style.transform=`translateY(${(1-pin)*160}px)`;
+  const taps=[9.9,10.7,11.5,12.3]; let done=0; const rp=$('ripple'); rp.style.opacity=0;
+  taps.forEach((tt,n)=>{const s=slots[n],cv=s.querySelector('.cv');
+    const on=t>=tt; cv.classList.toggle('gray',!on); if(on)done++;
+    let b=s.querySelector('.badge'); if(on&&!b){s.insertAdjacentHTML('beforeend','<div class="badge">✓</div>');b=s.querySelector('.badge');}
+    if(!on&&b)b.remove();
+    if(b){const k=back(lin(t,tt,tt+.3));b.style.transform=`scale(${k})`;}
+    const rk=lin(t,tt-.05,tt+.4); if(rk>0&&rk<1){const r=s.getBoundingClientRect(),sc=s.closest('.screen').getBoundingClientRect();
+      rp.style.left=(r.left-sc.left+r.width/2-80)+'px';rp.style.top=(r.top-sc.top+r.height/2-80)+'px';
+      rp.style.opacity=1-rk;rp.style.transform=`scale(${.3+rk})`;}
+  });
+  $('bar').style.width=(done/6*100)+'%'; $('cnt').textContent=`완료 ${done} / 6 · 남은 ${6-done}`;
+
+  // 5
+  $('c5a').style.opacity=lin(t,14.1,14.4);
+  const n=Math.round(37*easeOut(lin(t,14.2,15.3))); $('c5n').textContent=n+'권'; $('c5n').style.opacity=lin(t,14.1,14.3);
+  $('fill').setAttribute('y',(98-76*easeOut(lin(t,14.2,15.3))).toFixed(1));
+  $('c5b').style.opacity=lin(t,15.3,15.6); rise($('c5b'),t,15.3,24);
+  const shk=lin(t,15.6,16.3); $('jar').style.transform=`rotate(${Math.sin(shk*Math.PI*8)*6*(shk>0&&shk<1?1:0)}deg)`;
+  $('crack1').setAttribute('stroke-dashoffset',100-100*lin(t,16.25,16.5)); $('crack2').setAttribute('stroke-dashoffset',30-30*lin(t,16.4,16.55));
+  const pop=back(lin(t,16.35,16.7)); $('c5c').style.opacity=lin(t,16.35,16.45); $('c5c').style.transform=`scale(${.5+.5*pop}) rotate(-6deg)`;
+
+  // 6
+  $('c6a').style.opacity=1; rise($('c6a'),t,17.3);
+  $('c6b').style.opacity=lin(t,17.9,18.3); rise($('c6b'),t,17.9,30);
+}
+window.render=render; window.DUR=DUR;
+render(0);
+</script>
+</body></html>
