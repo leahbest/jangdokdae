@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+:root{--cream:#f6efe7;--paper:#fbf8f4;--ink:#2a231d;--muted:#8a7f74;--brand:#6e4a33;--brand2:#8b5e41;--tint:#ecdfd2;--green:#2e9a58;--greenbg:#e6f4ea;--line:#e3d8cc;
+  --disp:"Gowun Batang",serif;--body:"IBM Plex Sans KR",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#555}
+.slide{width:1080px;height:1350px;position:relative;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--body);margin:0 0 20px}
+.slide.cream{background:var(--cream)}.slide.dark{background:var(--brand);color:#fbf4ec}
+.pad{position:absolute;inset:0;padding:96px 88px;display:flex;flex-direction:column}
+.brand{display:flex;align-items:center;gap:14px;font-family:var(--disp);font-weight:700;font-size:34px;color:var(--brand)}
+.dark .brand{color:#f6e9da}
+.brand svg{width:42px;height:44px}
+.page{position:absolute;right:88px;top:104px;font-size:24px;color:var(--muted);letter-spacing:.06em}
+.dark .page{color:#d9c3ae}
+h1{font-family:var(--disp);font-weight:700;font-size:84px;line-height:1.22;letter-spacing:-.01em;margin:0}
+h2{font-family:var(--disp);font-weight:700;font-size:68px;line-height:1.25;letter-spacing:-.01em;margin:0}
+.sub{font-size:32px;line-height:1.6;color:var(--muted);margin:28px 0 0}
+.dark .sub{color:#e6d3c1}
+em{font-style:normal;color:var(--brand)}
+.dark em{color:#ffd9a8}
+.phone{position:absolute;width:470px;height:1017px;border-radius:64px;background:#1f1a16;padding:14px;box-shadow:0 30px 80px rgba(60,40,25,.28)}
+.phone img{width:100%;height:100%;object-fit:cover;object-position:top;border-radius:52px;display:block}
+.phone.crop img{object-position:bottom}
+.chips{display:flex;flex-wrap:wrap;gap:14px;margin-top:40px}
+.chip{font-size:28px;font-weight:500;padding:12px 24px;border-radius:999px;background:var(--tint);color:var(--brand)}
+.foot{position:absolute;left:88px;bottom:80px;font-size:26px;color:var(--muted)}
+/* covers row */
+.covers{display:flex;gap:22px;align-items:flex-end}
+.cv{width:150px;aspect-ratio:2/3;border-radius:6px;position:relative;overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,.18);display:flex;flex-direction:column;justify-content:flex-end;padding:14px;color:#fff;font-family:var(--disp);font-weight:700;font-size:20px;line-height:1.25}
+.cv::before{content:"";position:absolute}
+.cv span{position:relative}
+.cv.a{background:#2f4858}.cv.a::before{inset:0 0 auto 0;height:40%;background:#e9c46a}
+.cv.b{background:#3d2c5e}.cv.b::before{width:72%;aspect-ratio:1;border-radius:50%;top:10%;left:14%;background:#f4a6a6}
+.cv.c{background:#1f3b2c}.cv.c::before{inset:0;background:linear-gradient(152deg,#a7c4a0 0 44%,transparent 44.2%)}
+.cv.d{background:#7a2e2e}.cv.d::before{inset:8% 8% auto 8%;height:3px;background:#f2d0a4;box-shadow:0 9px 0 #f2d0a4}
+.cv.e{background:#123c69}.cv.e::before{width:72%;aspect-ratio:1;border-radius:50%;top:10%;left:14%;background:#ee6c4d}
+.gray{filter:grayscale(1) contrast(.9) brightness(1.08);opacity:.85}
+.seal{position:absolute;right:10px;top:10px;width:46px;height:46px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 4px 10px rgba(0,0,0,.2);color:var(--green);font-size:28px;font-weight:700}
+.arrow{font-size:56px;color:var(--brand);font-family:var(--body)}
+.url{display:inline-flex;align-items:center;gap:16px;margin-top:44px;padding:26px 36px;border-radius:24px;background:#fff;border:3px solid var(--brand);font-size:40px;font-weight:700;color:var(--brand);letter-spacing:-.01em}
+.dark .url{background:#fbf4ec;border-color:#fbf4ec}
+.points{display:flex;flex-direction:column;gap:22px;margin-top:56px}
+.pt{display:flex;gap:20px;align-items:center;font-size:34px;font-weight:500}
+.pt i{width:52px;height:52px;flex:none;border-radius:50%;background:var(--greenbg);color:var(--green);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:28px}
+.dark .pt i{background:rgba(255,255,255,.14);color:#ffd9a8}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:52px}
+.os{background:#fff;border:2px solid var(--line);border-radius:32px;padding:36px 34px}
+.os h3{margin:0 0 22px;font-size:34px;display:flex;align-items:center;gap:12px}
+.os ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:22px}
+.os li{display:flex;gap:16px;font-size:29px;line-height:1.45}
+.os li b{flex:none;width:44px;height:44px;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:24px}
+.key{display:inline-block;padding:2px 12px;border-radius:10px;background:var(--tint);color:var(--brand);font-weight:700}
+.note{margin-top:36px;font-size:28px;color:var(--muted);line-height:1.6}
+.bubble{position:absolute;background:#fff;border-radius:28px;padding:22px 30px;font-size:30px;font-weight:600;box-shadow:0 14px 34px rgba(60,40,25,.16)}
+</style></head><body>
+
+<!-- 1 표지 -->
+<section class="slide cream" id="s1"><div class="pad">
+  <div class="brand"><svg viewBox="0 0 100 104"><path d="M32 20 C14 28 8 52 14 74 C18 90 30 97 50 97 C70 97 82 90 86 74 C92 52 86 28 68 20 Z" fill="currentColor"/><rect x="31" y="11" width="38" height="10" rx="3" fill="currentColor"/></svg>장독대</div>
+  <h1 style="margin-top:150px">보고 싶은 것,<br><em>장독</em>에<br>묵혀두셨죠?</h1>
+  <p class="sub">책 · 웹툰 · 영화 · 드라마 · 공연<br>하나씩 꺼내 맛보는 <b style="color:var(--ink)">컨텐츠 도장깨기</b></p>
+  <div class="covers" style="position:absolute;left:88px;right:88px;bottom:110px;justify-content:space-between">
+    <div class="cv a gray"><span>언젠가<br>읽을 책</span></div>
+    <div class="cv b gray"><span>찜해둔<br>영화</span></div>
+    <div class="cv c gray"><span>정주행<br>웹툰</span></div>
+    <div class="cv d"><span>보고 싶던<br>뮤지컬</span><div class="seal">✓</div></div>
+    <div class="cv e"><span>다 본<br>드라마</span><div class="seal">✓</div></div>
+  </div>
+</div></section>
+
+<!-- 2 문제 -->
+<section class="slide" id="s2"><div class="pad">
+  <div class="page">02</div>
+  <h2 style="margin-top:80px">찜만 해두고<br>까먹은 작품,<br>몇 개예요?</h2>
+  <div class="chips" style="margin-top:70px">
+    <span class="chip">언젠가 읽을 책</span><span class="chip">주말에 볼 영화</span><span class="chip">정주행 미룬 웹툰</span>
+    <span class="chip">다들 본 드라마</span><span class="chip">보고 싶던 뮤지컬</span><span class="chip">완결 기다린 웹소설</span>
+  </div>
+  <p class="sub" style="margin-top:80px;font-size:36px;color:var(--ink)">할 일 목록 말고,<br><em style="font-weight:700">내가 깨 나가는 책장</em>이 필요해요.</p>
+  <div class="covers" style="position:absolute;left:88px;bottom:170px;gap:18px">
+    <div class="cv a gray" style="width:120px"></div><div class="cv b gray" style="width:120px"></div><div class="cv c gray" style="width:120px"></div><div class="cv d gray" style="width:120px"></div><div class="cv e gray" style="width:120px"></div><div class="cv a gray" style="width:120px;opacity:.5"></div>
+  </div>
+  <p class="foot">장독대는 보고 싶은 것만 담는 곳이에요.</p>
+</div></section>
+
+<!-- 3 장독 담기 -->
+<section class="slide cream" id="s3"><div class="pad">
+  <div class="page">03</div>
+  <h2>취미마다<br><em>장독</em> 하나씩</h2>
+  <p class="sub">종류별로 장독을 놓고<br>보고 싶은 작품을 담아요.</p>
+  <div class="chips" style="max-width:470px">
+    <span class="chip">책</span><span class="chip">웹소설</span><span class="chip">웹툰·만화</span><span class="chip">영화</span><span class="chip">드라마</span><span class="chip">예능</span><span class="chip">뮤지컬</span><span class="chip">연극</span>
+  </div>
+  <p class="note" style="max-width:450px">책은 <b>검색</b>하면 표지까지 쏙,<br>포스터는 <b>복사 → 붙여넣기</b>로 끝!</p>
+  <div class="phone" style="right:70px;top:250px"><img src="shots/home.png" alt=""></div>
+</div></section>
+
+<!-- 4 흑백 → 컬러 -->
+<section class="slide" id="s4"><div class="pad">
+  <div class="page">04</div>
+  <h2>안 본 건 <span style="color:#9a948d">흑백</span>,<br>다 보면 <em>컬러</em>로 콕!</h2>
+  <div style="display:flex;align-items:center;gap:30px;margin-top:70px">
+    <div class="cv a gray" style="width:210px;font-size:28px;padding:20px"><span>데미안</span></div>
+    <div class="arrow">→</div>
+    <div class="cv a" style="width:210px;font-size:28px;padding:20px"><span>데미안</span><div class="seal" style="width:60px;height:60px;font-size:34px">✓</div></div>
+  </div>
+  <p class="sub" style="margin-top:56px;max-width:470px">장독이 조금씩 색으로<br>채워지는 재미.<br>별점 ★ 과 한 줄 메모는<br><b style="color:var(--ink)">원할 때만</b> 남겨요.</p>
+  <div class="phone" style="right:40px;top:640px;width:420px;height:909px;transform:rotate(4deg)"><img src="shots/jar.png" alt=""></div>
+</div></section>
+
+<!-- 5 한 국자 뜨기 -->
+<section class="slide cream" id="s5"><div class="pad">
+  <div class="page">05</div>
+  <h2>뭘 볼지<br>모르겠다면?</h2>
+  <p class="sub" style="font-size:40px;color:var(--ink);font-weight:600;margin-top:36px">🥄 한 국자 뜨기</p>
+  <p class="sub" style="margin-top:12px;max-width:440px">모든 장독의 안 본 작품 중에서<br>오늘의 한 편을 골라줘요.</p>
+  <div class="phone" style="right:90px;top:250px;width:420px;height:909px"><img src="shots/ladle.png" alt=""></div>
+  <div class="bubble" style="left:88px;top:860px">오늘은<br>이걸로! 🥄</div>
+</div></section>
+
+<!-- 6 장독 깨기 + 리포트 -->
+<section class="slide" id="s6"><div class="pad">
+  <div class="page">06</div>
+  <h2>다 비우면<br><em>쨍그랑!</em></h2>
+  <p class="sub">장독을 끝까지 비우면 깰 수 있어요.<br>이달에 해치운 작품은 <b style="color:var(--ink)">리포트</b>로 모아 봐요.</p>
+  <div class="phone" style="left:120px;top:560px;width:350px;height:758px;border-radius:52px;padding:11px;transform:rotate(-3deg)"><img src="shots/crack.png" alt="" style="border-radius:42px"></div>
+  <div class="phone" style="right:120px;top:530px;width:350px;height:758px;border-radius:52px;padding:11px;transform:rotate(3deg)"><img src="shots/report.png" alt="" style="border-radius:42px"></div>
+</div></section>
+
+<!-- 7 지금 바로 웹에서 -->
+<section class="slide dark" id="s7"><div class="pad">
+  <div class="brand"><svg viewBox="0 0 100 104"><path d="M32 20 C14 28 8 52 14 74 C18 90 30 97 50 97 C70 97 82 90 86 74 C92 52 86 28 68 20 Z" fill="currentColor"/><rect x="31" y="11" width="38" height="10" rx="3" fill="currentColor"/></svg>장독대</div>
+  <div class="page">07</div>
+  <h2 style="margin-top:120px">앱 출시 전,<br><em>지금 바로</em> 써보세요</h2>
+  <p class="sub">휴대폰·컴퓨터 브라우저에서 이 주소로!</p>
+  <div><span class="url" id="url1">jangdokdae-nine.vercel.app</span></div>
+  <div class="points">
+    <div class="pt"><i>✓</i><span>이메일·전화번호 없이 <b>아이디만</b>으로 가입</span></div>
+    <div class="pt"><i>✓</i><span>휴대폰 ↔ PC 기록 자동 동기화</span></div>
+    <div class="pt"><i>✓</i><span>무료</span></div>
+  </div>
+</div></section>
+
+<!-- 8 홈 화면에 추가 -->
+<section class="slide cream" id="s8"><div class="pad">
+  <div class="page">08</div>
+  <h2>휴대폰에선<br><em>앱처럼</em> 꺼내 쓰기</h2>
+  <p class="sub">홈 화면에 추가하면 옹기 아이콘으로 바로 열려요.</p>
+  <div class="steps">
+    <div class="os"><h3>아이폰 · 사파리</h3><ol>
+      <li><b>1</b><span>주소창에 장독대 주소 입력</span></li>
+      <li><b>2</b><span>아래 <span class="key">공유</span> 버튼</span></li>
+      <li><b>3</b><span><span class="key">홈 화면에 추가</span></span></li>
+    </ol></div>
+    <div class="os"><h3>안드로이드 · 크롬</h3><ol>
+      <li><b>1</b><span>주소창에 장독대 주소 입력</span></li>
+      <li><b>2</b><span>오른쪽 위 <span class="key">⋮</span> 메뉴</span></li>
+      <li><b>3</b><span><span class="key">홈 화면에 추가</span></span></li>
+    </ol></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:28px;margin-top:56px">
+    <img src="appicon.png" alt="" style="width:120px;height:120px;border-radius:28px;box-shadow:0 10px 24px rgba(0,0,0,.15)" id="appicon">
+    <div><div style="font-size:30px;font-weight:700">장독대</div><div style="font-size:26px;color:var(--muted);margin-top:4px" id="url2">jangdokdae-nine.vercel.app</div></div>
+  </div>
+</div></section>
+
+</body></html>
