@@ -343,7 +343,7 @@ function CoverDrop({ onPicked, hint }: { onPicked: (p: Picked) => void; hint: st
 }
 
 const COVER_HINT_VIDEO = '포스터를 길게 눌러(PC는 오른쪽 클릭) ‘이미지 복사’ 후 위 칸에 붙여넣으면 끝이에요. 캡처한 사진은 ‘사진 고르기’로 넣어요.';
-const COVER_HINT_BOOK = '표지 이미지를 복사해 붙여넣거나, 리디·레진·네이버 웹툰·카카오웹툰·교보·YES24 작품 페이지 주소를 붙여넣어요. 사진은 ‘사진 고르기’로.';
+const COVER_HINT_BOOK = '표지 이미지를 복사해 붙여넣거나, 리디·레진·네이버 웹툰·교보·YES24 작품 페이지 주소를 붙여넣어요. 사진은 ‘사진 고르기’로.';
 
 function CoverPane({ onAdd, video }: { onAdd: (d: NewItem) => void; video: boolean }) {
   const [picked, setPicked] = useState<Picked | null>(null);
