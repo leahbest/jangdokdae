@@ -103,15 +103,8 @@ html,body{margin:0;background:#000}
 
   <!-- 6. 끝 화면 -->
   <div class="layer" id="L6">
-    <div class="cap" id="c6a" style="top:360px;font-size:120px">같이<br>깨실 분? 🙋</div>
-    <div style="position:absolute;left:0;right:0;top:900px;text-align:center" id="c6b">
-      <img src="../cardnews/appicon.png" style="width:170px;height:170px;border-radius:40px;box-shadow:0 18px 40px rgba(0,0,0,.18)" alt="">
-      <div style="font:700 56px var(--disp);margin-top:22px">장독대</div>
-      <div style="font:500 36px var(--body);color:var(--muted);margin-top:8px">앱 출시 전, 웹에서 바로 써보기</div>
-      <div class="url">jangdokdae-nine.vercel.app</div>
-      <div style="font:500 32px var(--body);color:var(--muted);margin-top:26px">홈 화면에 추가하면 앱처럼 열려요</div>
-    </div>
-  </div>
+    <div class="cap" id="c6a" style="top:740px;font-size:140px">같이<br>깨실 분? 🙋</div>
+      </div>
 </div>
 
 <script>
@@ -217,7 +210,6 @@ function render(t){
 
   // 6
   $('c6a').style.opacity=1; rise($('c6a'),t,17.3);
-  $('c6b').style.opacity=lin(t,17.9,18.3); rise($('c6b'),t,17.9,30);
 }
 window.render=render; window.DUR=DUR;
 render(0);
