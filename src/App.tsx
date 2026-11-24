@@ -70,10 +70,7 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
   // 처음 들어온 사람에게는 이용방법을 한 번 보여줘요.
   useEffect(() => {
     try {
-      if (!localStorage.getItem('jangdokdae-help-seen')) {
-        localStorage.setItem('jangdokdae-help-seen', '1');
-        setSheetRaw({ k: 'help' });
-      }
+      if (!localStorage.getItem('jangdokdae-help-seen')) setSheetRaw({ k: 'help' });
     } catch { /* 저장소를 못 쓰면 그냥 넘어가요 */ }
   }, []);
 
@@ -223,7 +220,9 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
       {s?.k === 'ladle' && (
         <LadleSheet jars={jars} onClose={close} onGo={(jarId, itemId) => { close(); setFocusId(itemId); nav(`jar-${jarId}`); setTimeout(() => setFocusId(itemId)); }} />
       )}
-      {s?.k === 'help' && <HelpSheet onClose={close} />}
+      {s?.k === 'help' && (
+        <HelpSheet onClose={() => { try { localStorage.setItem('jangdokdae-help-seen', '1'); } catch { /* 무시 */ } close(); }} />
+      )}
       {s?.k === 'account' && (
         <AccountSheet account={account} onClose={close} onShowCode={(c) => { close(); onShowCode(c); }} />
       )}
