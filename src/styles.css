@@ -319,3 +319,4 @@ h1,h2,h3{text-wrap:balance;margin:0}
 @media (max-width:380px){.top .ghost{padding:6px 10px;font-size:13px}.top .icon-btn{width:34px;height:34px}.logo{gap:6px}.logo b{font-size:20px}.account-btn{max-width:92px}}
 .jars > *{min-width:0}
 .jar-card{min-width:0}
+.app-tip{background:var(--well);border-radius:10px;padding:8px 10px;line-height:1.5}

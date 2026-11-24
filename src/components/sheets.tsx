@@ -337,6 +337,7 @@ function CoverDrop({ onPicked, hint }: { onPicked: (p: Picked) => void; hint: st
         <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) fromFile(f); e.target.value = ''; }} />
       </div>
       <p className="hint">{hint}</p>
+      <p className="hint app-tip">📱 웹툰·웹소설 <b>앱</b>에서는 이미지나 링크 복사가 잘 안 돼요. <b>사파리·크롬 같은 인터넷 브라우저</b>에서 작품 페이지를 열어 복사하거나, 앱 화면을 <b>캡처</b>해서 ‘사진 고르기’로 넣어주세요.</p>
       {err && <p className="err" role="alert">{err}</p>}
     </div>
   );

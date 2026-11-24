@@ -64,6 +64,17 @@ export function HelpSheet({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="help-card">
+            <h4>📱 휴대폰에서 앱으로 보고 있다면</h4>
+            <p>카카오페이지·네이버 웹툰 같은 <b>앱 안에서는</b> 이미지 복사나 링크 복사가 잘 안 돼요. 이렇게 해보세요.</p>
+            <ol className="help-ways">
+              <li><b>사파리·크롬 같은 인터넷 브라우저</b>를 열고 작품 이름을 검색해 작품 페이지로 들어가요</li>
+              <li>표지를 <b>길게 눌러 ‘이미지 복사’</b>, 또는 주소창의 <b>링크를 복사</b>해요</li>
+              <li>장독대 ‘표지 넣기’ 칸에 <b>붙여넣기</b></li>
+            </ol>
+            <p className="help-tip">제일 간단한 방법은 앱 화면을 <b>캡처</b>해서 ‘사진 고르기’로 넣는 거예요.</p>
+          </div>
+
+          <div className="help-card">
             <h4>✏️ 표지가 없어도 괜찮아요</h4>
             <p><b>직접 입력</b>으로 제목만 적으면 예쁜 기본 표지를 만들어 줘요. 나중에 작품 <b>⋯ → 표지 바꾸기</b>로 바꿀 수 있어요.</p>
           </div>
