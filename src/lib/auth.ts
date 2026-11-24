@@ -70,6 +70,32 @@ export async function regenerateCode() {
   return code;
 }
 
+/**
+ * 회원 탈퇴: 내 표지 사진을 먼저 지우고(파일 정리 실패는 무시), 계정을 지워요.
+ * 계정이 지워지면 장독·작품·프로필은 데이터베이스에서 함께 사라져요.
+ */
+export async function deleteAccount() {
+  const client = sb();
+  const { data } = await client.auth.getSession();
+  const uid = data.session?.user.id;
+  if (!uid) throw new Error('로그인이 필요해요.');
+  try {
+    for (let round = 0; round < 20; round++) {
+      const { data: files } = await client.storage.from('covers').list(uid, { limit: 100 });
+      if (!files?.length) break;
+      const { error } = await client.storage.from('covers').remove(files.map((f) => `${uid}/${f.name}`));
+      if (error) break;
+    }
+  } catch { /* 사진 정리는 넘어가도 돼요 */ }
+  const { error } = await client.rpc('delete_my_account');
+  if (error) {
+    if (/could not find|does not exist/i.test(error.message)) throw new Error('탈퇴 기능이 아직 준비되지 않았어요. (delete_account.sql 실행 필요)');
+    throw new Error('탈퇴하지 못했어요. 잠시 후 다시 시도해주세요.');
+  }
+  await client.auth.signOut().catch(() => {});
+  try { localStorage.removeItem('jangdokdae-help-seen'); } catch { /* 무시 */ }
+}
+
 export async function signOut() {
   await sb().auth.signOut();
 }

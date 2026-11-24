@@ -107,3 +107,13 @@ grant execute on function public.reset_password_with_code(text, text, text) to a
 alter table public.jars drop constraint if exists jars_type_check;
 alter table public.jars add constraint jars_type_check
   check (type in ('book','webnovel','comic','movie','drama','variety','musical','play'));
+
+-- 9. 회원 탈퇴 (supabase/delete_account.sql 과 같아요)
+create or replace function public.delete_my_account()
+returns void language plpgsql security definer set search_path = public, auth as $$
+begin
+  if auth.uid() is null then raise exception 'not signed in'; end if;
+  delete from auth.users where id = auth.uid();
+end $$;
+revoke all on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;

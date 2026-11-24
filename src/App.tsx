@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import { LocalStore, SupabaseStore, type Store } from './lib/store';
-import { regenerateCode, signOut, usernameOf } from './lib/auth';
+import { deleteAccount, regenerateCode, signOut, usernameOf } from './lib/auth';
 import { useJangdok } from './lib/useJangdok';
 import type { Item } from './lib/types';
 import { stats } from './lib/types';
@@ -233,7 +233,9 @@ function Main({ store, account, onShowCode }: { store: Store; account: string | 
 
 function AccountSheet({ account, onClose, onShowCode }: { account: string | null; onClose: () => void; onShowCode: (c: string) => void }) {
   const [err, setErr] = useState('');
-  const [confirm, setConfirm] = useState(false);
+  const [mode, setMode] = useState<'menu' | 'code' | 'delete'>('menu');
+  const [typed, setTyped] = useState('');
+  const [busy, setBusy] = useState(false);
   if (!account) {
     return (
       <Sheet onClose={onClose} label="체험 모드">
@@ -243,26 +245,50 @@ function AccountSheet({ account, onClose, onShowCode }: { account: string | null
       </Sheet>
     );
   }
+  const back = () => { setMode('menu'); setErr(''); setTyped(''); };
   return (
     <Sheet onClose={onClose} label="내 계정">
       <h2>{account}</h2>
-      <p className="lead">같은 아이디로 로그인하면 휴대폰과 PC에서 같은 장독대를 볼 수 있어요.</p>
-      {confirm ? (
+      {mode === 'menu' && (
+        <>
+          <p className="lead">같은 아이디로 로그인하면 휴대폰과 PC에서 같은 장독대를 볼 수 있어요.</p>
+          <div className="menu">
+            <button type="button" onClick={() => setMode('code')}>복구 코드 새로 만들기</button>
+            <button type="button" onClick={() => { onClose(); signOut(); }}>로그아웃</button>
+            <button type="button" className="danger" onClick={() => setMode('delete')}>회원 탈퇴</button>
+          </div>
+        </>
+      )}
+      {mode === 'code' && (
         <>
           <p>새 복구 코드를 만들면 예전 코드는 더 이상 쓸 수 없어요.</p>
           {err && <p className="err">{err}</p>}
           <div className="sheet-actions">
-            <button className="ghost" type="button" onClick={() => setConfirm(false)}>그만두기</button>
+            <button className="ghost" type="button" onClick={back}>그만두기</button>
             <button className="primary" type="button" onClick={async () => {
               try { onShowCode(await regenerateCode()); } catch (e) { setErr((e as Error).message); }
             }}>새로 만들기</button>
           </div>
         </>
-      ) : (
-        <div className="menu">
-          <button type="button" onClick={() => setConfirm(true)}>복구 코드 새로 만들기</button>
-          <button type="button" className="danger" onClick={() => { onClose(); signOut(); }}>로그아웃</button>
-        </div>
+      )}
+      {mode === 'delete' && (
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          if (typed.trim().toLowerCase() !== account) return;
+          setBusy(true); setErr('');
+          try { await deleteAccount(); onClose(); } catch (e2) { setErr((e2 as Error).message); setBusy(false); }
+        }}>
+          <p className="lead">탈퇴하면 장독, 담은 작품, 별점·메모, 올린 표지 사진이 <b>모두 지워지고 되돌릴 수 없어요.</b></p>
+          <div className="field">
+            <label htmlFor="del-confirm">확인을 위해 아이디 <b>{account}</b>를 입력해주세요</label>
+            <input id="del-confirm" autoCapitalize="none" spellCheck={false} value={typed} onChange={(e) => setTyped(e.target.value)} />
+          </div>
+          {err && <p className="err" role="alert">{err}</p>}
+          <div className="sheet-actions">
+            <button className="ghost" type="button" onClick={back}>그만두기</button>
+            <button className="primary danger-btn" type="submit" disabled={busy || typed.trim().toLowerCase() !== account}>{busy ? '지우는 중…' : '탈퇴하기'}</button>
+          </div>
+        </form>
       )}
     </Sheet>
   );
