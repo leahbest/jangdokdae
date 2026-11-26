@@ -12,6 +12,7 @@ import {
   AddSheet, CoverSheet, CrackSheet, ItemMenuSheet, JarMenuSheet, LadleSheet, MemoSheet, NewJarSheet, RatingSheet,
 } from './components/sheets';
 import { HelpSheet } from './components/Help';
+import { AnnouncementBar } from './components/Announcement';
 import { Home } from './screens/Home';
 import { JarScreen } from './screens/JarScreen';
 import { Report } from './screens/Report';
@@ -39,11 +40,18 @@ function Root() {
 
   const cloud = useMemo(() => (supabase && session ? new SupabaseStore(supabase) : null), [session?.user.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (local) return <Main store={local} account={null} onShowCode={setCode} />;
-  if (code) return <RecoveryCode code={code} onDone={() => setCode(null)} />;
-  if (session === undefined) return <main className="loading">장독대를 여는 중…</main>;
-  if (!session || !cloud) return <AuthScreen onSignedUp={setCode} />;
-  return <Main key={session.user.id} store={cloud} account={usernameOf(session.user.email)} onShowCode={setCode} />;
+  let screen;
+  if (local) screen = <Main store={local} account={null} onShowCode={setCode} />;
+  else if (code) screen = <RecoveryCode code={code} onDone={() => setCode(null)} />;
+  else if (session === undefined) screen = <main className="loading">장독대를 여는 중…</main>;
+  else if (!session || !cloud) screen = <AuthScreen onSignedUp={setCode} />;
+  else screen = <Main key={session.user.id} store={cloud} account={usernameOf(session.user.email)} onShowCode={setCode} />;
+  return (
+    <>
+      <AnnouncementBar />
+      {screen}
+    </>
+  );
 }
 
 type Route = { name: 'home'; tab: 'active' | 'broken' } | { name: 'report' } | { name: 'jar'; id: string };
