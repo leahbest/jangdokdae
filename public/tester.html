@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>장독대 앱 테스터 신청</title>
+<meta name="description" content="장독대 안드로이드 앱 비공개 테스트에 함께해 주세요. 14일 동안 써보고 의견을 들려주세요.">
+<meta property="og:title" content="장독대 앱 테스터 신청">
+<meta property="og:description" content="묵혀둔 책, 같이 깨실 분? 안드로이드 앱 비공개 테스터를 모아요.">
+<meta property="og:image" content="/icons/icon-512.png">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#faf9f7;--surface:#fff;--well:#f2efea;--line:#e6e1da;--ink:#24211e;--muted:#857e75;--brand:#6e4a33;--tint:#f3ebe4;--green:#2e9a58;--greenbg:#ebf7ef;--red:#c4382c;
+  --disp:"Gowun Batang","Nanum Myeongjo",serif;--body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#161513;--surface:#1f1d1a;--well:#2a2724;--line:#36322d;--ink:#eeeae4;--muted:#a19a90;--brand:#c8986f;--tint:#2f2620;--green:#52c27f;--greenbg:#1b2e22;--red:#e35a4c;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--body);
+  padding:max(28px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 64px max(16px,env(safe-area-inset-left))}
+main{max-width:520px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font:700 24px var(--disp);color:var(--brand)}
+.brand img{width:40px;height:40px;border-radius:10px}
+h1{font:700 30px/1.3 var(--disp);margin:22px 0 8px;text-wrap:balance}
+.lead{color:var(--muted);margin:0 0 20px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px}
+.what{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.what li{display:flex;gap:10px}
+.what b.n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--tint);color:var(--brand);display:grid;place-items:center;font-size:13px}
+.warn{background:var(--tint);border-radius:12px;padding:10px 12px;font-size:14px;margin-top:12px}
+form{margin-top:18px;display:flex;flex-direction:column;gap:14px}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500}
+label.f small{color:var(--muted);font-weight:400}
+input[type=text],input[type=email]{font:inherit;color:inherit;border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg);width:100%}
+input:focus-visible,button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--brand)}
+button{font:600 16px var(--body);border:0;border-radius:999px;padding:14px;background:var(--brand);color:#fff;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+.err{color:var(--red);font-size:14px;margin:0}
+.done{text-align:center;padding:28px 18px}
+.done h2{font:700 24px var(--disp);margin:10px 0 6px}
+.done .big{font-size:44px}
+.foot{text-align:center;font-size:12.5px;color:var(--muted);margin-top:22px}
+.foot a{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><img src="/icons/icon-192.png" alt="">장독대</div>
+  <h1>묵혀둔 책, 같이 깨실 분? 🙋<br>앱 테스터를 모아요</h1>
+  <p class="lead">장독대 안드로이드 앱을 플레이스토어에 올리기 전에, 먼저 써봐 주실 분들을 찾고 있어요.</p>
+
+  <section class="box" aria-label="테스터가 하는 일">
+    <ul class="what">
+      <li><b class="n">1</b><span>12월 초에 <b>테스트 참여 링크</b>를 보내드려요.</span></li>
+      <li><b class="n">2</b><span>링크로 참여한 뒤 <b>플레이스토어에서 장독대 설치</b></span></li>
+      <li><b class="n">3</b><span><b>14일 동안</b> 가끔 열어서 책·영화를 담아보고, 의견을 한 줄 남겨주세요.</span></li>
+    </ul>
+    <p class="warn">📱 <b>안드로이드 휴대폰</b>만 참여할 수 있어요. (아이폰은 아직 안 돼요)<br>🗓 14일 동안은 <b>앱을 지우거나 테스트에서 나가지 말아 주세요.</b> 인원이 줄면 테스트가 처음부터 다시 시작돼요.</p>
+  </section>
+
+  <form id="f" novalidate>
+    <label class="f" for="nickname">이름 또는 닉네임 <small>(인스타 아이디도 좋아요)</small>
+      <input id="nickname" type="text" maxlength="40" autocomplete="nickname" required>
+    </label>
+    <label class="f" for="email">플레이스토어에서 쓰는 구글 계정(지메일) <small>테스트 초대에 이 주소가 그대로 쓰여요</small>
+      <input id="email" type="email" maxlength="120" autocomplete="email" inputmode="email" placeholder="example@gmail.com" required>
+    </label>
+    <label class="f" for="model">휴대폰 기종 <small>(선택, 예: 갤럭시 S24)</small>
+      <input id="model" type="text" maxlength="60">
+    </label>
+    <label class="check" for="a1"><input id="a1" type="checkbox"><span>안드로이드 휴대폰을 쓰고 있어요</span></label>
+    <label class="check" for="a2"><input id="a2" type="checkbox"><span>14일 동안 앱을 지우지 않고 가끔 써볼게요</span></label>
+    <label class="check" for="a3"><input id="a3" type="checkbox"><span><b>개인정보 수집에 동의해요</b><br><small style="color:var(--muted)">닉네임·지메일·기종을 테스트 초대와 연락에만 쓰고, 정식 출시 후 30일 안에 지워요. 문의 leah_0215@naver.com</small></span></label>
+    <p class="err" id="err" role="alert" hidden></p>
+    <button id="go" type="submit">테스터 신청하기</button>
+  </form>
+
+  <section class="box done" id="ok" hidden aria-live="polite">
+    <div class="big">🫙</div>
+    <h2>신청 완료! 고마워요</h2>
+    <p class="lead" style="margin:0">12월 초에 테스트 참여 링크를 보내드릴게요.<br>같이 깨봐요 📚</p>
+  </section>
+
+  <p class="foot"><a href="/">장독대 웹에서 먼저 써보기</a> · <a href="/privacy.html">개인정보처리방침</a></p>
+</main>
+<script>
+(function () {
+  var URL_ = 'https://sknazoceceukdsxltezs.supabase.co/rest/v1/tester_signups';
+  var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrbmF6b2NlY2V1a2RzeGx0ZXpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU0MTUxNjAsImV4cCI6MjExMDk5MTE2MH0.APQ6u4WmEvwWDGRPcyTJlJSVTNN5eZw688BU_6JVwtM';
+  var f = document.getElementById('f'), err = document.getElementById('err'), go = document.getElementById('go');
+  function fail(m) { err.textContent = m; err.hidden = false; }
+  f.addEventListener('submit', function (e) {
+    e.preventDefault();
+    err.hidden = true;
+    var nick = document.getElementById('nickname').value.trim();
+    var email = document.getElementById('email').value.trim().toLowerCase();
+    var model = document.getElementById('model').value.trim();
+    var a1 = document.getElementById('a1').checked, a2 = document.getElementById('a2').checked, a3 = document.getElementById('a3').checked;
+    if (!nick) return fail('이름이나 닉네임을 적어주세요.');
+    if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(email)) return fail('구글 계정 주소를 확인해 주세요. (예: example@gmail.com)');
+    if (!a1) return fail('지금은 안드로이드 휴대폰만 참여할 수 있어요.');
+    if (!a2 || !a3) return fail('아래 두 가지에 동의해 주셔야 신청할 수 있어요.');
+    go.disabled = true; go.textContent = '신청 중…';
+    fetch(URL_, {
+      method: 'POST',
+      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ nickname: nick, email: email, phone_model: model || null, is_android: a1, agree_14days: a2, agree_privacy: a3 })
+    }).then(function (r) {
+      if (r.ok) { f.hidden = true; document.getElementById('ok').hidden = false; return; }
+      return r.json().catch(function () { return {}; }).then(function (b) {
+        if (b && b.code === '23505') fail('이미 신청된 주소예요. 고마워요! 🙂');
+        else fail('신청하지 못했어요. 잠시 후 다시 시도해 주세요.');
+      });
+    }).catch(function () { fail('인터넷 연결을 확인해 주세요.'); })
+      .finally(function () { go.disabled = false; go.textContent = '테스터 신청하기'; });
+  });
+})();
+</script>
+</body>
+</html>
