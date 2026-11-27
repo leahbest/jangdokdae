@@ -51,7 +51,7 @@ async function yes24Books(q: string): Promise<Hit[] | null> {
   const u = new URL('https://apis.yes24.com/v1/goods/itemList');
   u.searchParams.set('query', q);
   u.searchParams.set('category', 'ALL');
-  u.searchParams.set('sort', 'RELATION');
+  u.searchParams.set('sort', 'DEFAULT'); // 인기도순: 많이 읽힌 판본이 위로
   u.searchParams.set('pageSize', '30');
   let r: Response;
   try {
@@ -68,7 +68,7 @@ async function yes24Books(q: string): Promise<Hit[] | null> {
   if (!items.length) return null;
   return items.map((b) => ({
     title: decode(b.title || ''),
-    creator: decode(b.author || ''),
+    creator: decode(b.author || '').replace(/\s*저(?=\s*(\/|,|$))/g, '').trim(),
     sub: [b.goodsSortNm === 'eBook' || /전자책|eBook/i.test(b.goodsSortNm || '') ? 'eBook' : '', b.publisher, (b.publishDate || '').slice(0, 4)]
       .filter(Boolean).join(' · '),
     cover: https(b.cover) || null,
