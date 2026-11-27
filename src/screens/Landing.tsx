@@ -74,7 +74,7 @@ export function Landing({ onStart, onLogin }: { onStart: () => void; onLogin: ()
           </div>
           <figure className="lp-shot lp-video">
             <video src="/landing/ladle.mp4" poster="/landing/ladle-poster.jpg" autoPlay muted loop playsInline preload="metadata"
-              aria-label="한 국자 뜨기 시연: 표지들이 섞이다가 '식물, 상점'이 뽑히고, 이걸로 할게를 누르면 한겨레 틴시리즈 장독에서 그 책이 강조돼요" />
+              aria-label="한 국자 뜨기 시연: 표지들이 섞이다가 '사막의 바다'가 뽑히고, 이걸로 할게를 누르면 한겨레 틴시리즈 장독에서 그 책이 강조돼요" />
             <figcaption>실제로 써본 화면 · 한 국자 떠서 오늘의 책 고르기</figcaption>
           </figure>
         </article>
