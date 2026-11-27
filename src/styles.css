@@ -373,3 +373,5 @@ h1,h2,h3{text-wrap:balance;margin:0}
 .lp-foot{text-align:center;font-size:13px;color:var(--muted);padding-top:24px;display:flex;flex-direction:column;gap:6px;overflow-wrap:anywhere}
 .lp-foot a{color:var(--muted)}
 .auth-back{display:block;margin:0 0 6px}
+.lp-video video{width:100%;max-width:760px;height:auto;aspect-ratio:16/9;border-radius:14px;border:1px solid var(--line);box-shadow:var(--shadow);background:var(--well);display:block;margin:0 auto}
+@media (prefers-reduced-motion:reduce){.lp-video video{animation:none}}

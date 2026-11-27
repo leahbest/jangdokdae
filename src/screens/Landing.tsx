@@ -66,14 +66,16 @@ export function Landing({ onStart, onLogin }: { onStart: () => void; onLogin: ()
           </div>
         </article>
 
-        <article className="lp-feature lp-feature-side">
+        <article className="lp-feature">
           <div className="lp-text">
             <span className="lp-num">3</span>
             <h3>뭘 볼지 모를 땐, 한 국자 뜨기 <span className="lp-ladle"><LadleIcon /></span></h3>
-            <p>쌓아둔 건 많은데 뭐부터 읽을지 모르겠다면? 모든 장독의 안 읽은 작품 중에서 오늘의 한 권을 골라줘요. 🎲</p>
+            <p>쌓아둔 건 많은데 뭐부터 읽을지 모르겠다면? 모든 장독의 안 읽은 작품 중에서 오늘의 한 권을 골라줘요. [이걸로 할게]를 누르면 그 책이 있는 장독으로 바로 데려다줘요. 🎲</p>
           </div>
-          <figure className="lp-shot lp-shot-narrow">
-            <img src="/landing/ladle.png" alt="한 국자 뜨기 화면: 모든 장독의 미완료 123편 중에서 한 편을 골라준 모습" width="325" height="478" loading="lazy" />
+          <figure className="lp-shot lp-video">
+            <video src="/landing/ladle.mp4" poster="/landing/ladle-poster.jpg" autoPlay muted loop playsInline preload="metadata"
+              aria-label="한 국자 뜨기 시연: 표지들이 섞이다가 '식물, 상점'이 뽑히고, 이걸로 할게를 누르면 한겨레 틴시리즈 장독에서 그 책이 강조돼요" />
+            <figcaption>실제로 써본 화면 · 한 국자 떠서 오늘의 책 고르기</figcaption>
           </figure>
         </article>
       </section>
