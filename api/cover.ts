@@ -50,6 +50,14 @@ export default async function handler(req: Req, res: Res) {
         if (tall) cover = `${tall[0]}?width=600`;
       }
 
+      // 공연 예매 페이지: "뮤지컬 〈제목〉 부제 뮤지컬 일정 및 예매 | NOL 티켓" → "제목 부제"
+      if (/yanolja\.com|interpark\.com|ticketlink\.co\.kr|sac\.or\.kr/.test(url.hostname)) {
+        title = title.split(/\s+\|\s+/)[0]
+          .replace(/\s*(뮤지컬|연극|콘서트|공연|클래식|오페라|무용)?\s*일정 및 예매.*$/, '')
+          .replace(/^(뮤지컬|연극|콘서트)\s+/, '')
+          .replace(/[〈<《]([^〉>》]+)[〉>》]/, '$1')
+          .trim();
+      }
       title = title.replace(/\s*[-|:]\s*(리디|RIDI|레진코믹스|봄툰|교보문고|알라딘|YES24|네이버.*|카카오.*)$/i, '').trim();
       if (/^(리디|RIDI|ridibooks|레진코믹스|봄툰.*|교보문고|알라딘|YES24|네이버 ?(웹툰|시리즈)|카카오페이지|카카오웹툰)$/i.test(title)) title = '';
       const og = meta(html, 'og:image');
