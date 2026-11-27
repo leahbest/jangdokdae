@@ -45,7 +45,8 @@ type TmdbItem = { id: number; title?: string; name?: string; original_title?: st
   release_date?: string; first_air_date?: string; poster_path?: string | null };
 
 async function tmdb(q: string, kind: 'movie' | 'tv'): Promise<Hit[]> {
-  const token = need('TMDB_TOKEN', 'TMDB');
+  // 붙여넣을 때 섞여 들어가기 쉬운 공백·따옴표·'Bearer ' 접두어는 떼어내요.
+  const token = need('TMDB_TOKEN', 'TMDB').trim().replace(/^["']|["']$/g, '').replace(/^Bearer\s+/i, '').trim();
   const u = new URL(`https://api.themoviedb.org/3/search/${kind}`);
   u.searchParams.set('query', q);
   u.searchParams.set('language', 'ko-KR');
