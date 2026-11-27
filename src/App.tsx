@@ -17,6 +17,7 @@ import { Home } from './screens/Home';
 import { JarScreen } from './screens/JarScreen';
 import { Report } from './screens/Report';
 import { AuthScreen, RecoveryCode } from './screens/Auth';
+import { Landing } from './screens/Landing';
 
 export default function App() {
   return (
@@ -30,6 +31,14 @@ function Root() {
   const local = useMemo(() => (supabase ? null : new LocalStore()), []);
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [code, setCode] = useState<string | null>(null);
+  // 로그인 전: #signup / #login 이면 가입·로그인 화면, 아니면 소개 첫 화면
+  const [hash, setHash] = useState(() => location.hash.replace(/^#/, ''));
+  useEffect(() => {
+    const on = () => setHash(location.hash.replace(/^#/, ''));
+    window.addEventListener('hashchange', on);
+    return () => window.removeEventListener('hashchange', on);
+  }, []);
+  const go = (h: string) => { location.hash = h; window.scrollTo(0, 0); };
 
   useEffect(() => {
     if (!supabase) return;
@@ -44,7 +53,9 @@ function Root() {
   if (local) screen = <Main store={local} account={null} onShowCode={setCode} />;
   else if (code) screen = <RecoveryCode code={code} onDone={() => setCode(null)} />;
   else if (session === undefined) screen = <main className="loading">장독대를 여는 중…</main>;
-  else if (!session || !cloud) screen = <AuthScreen onSignedUp={setCode} />;
+  else if ((!session || !cloud) && (hash === 'signup' || hash === 'login'))
+    screen = <AuthScreen key={hash} initialMode={hash} onSignedUp={setCode} onBack={() => go('')} />;
+  else if (!session || !cloud) screen = <Landing onStart={() => go('signup')} onLogin={() => go('login')} />;
   else screen = <Main key={session.user.id} store={cloud} account={usernameOf(session.user.email)} onShowCode={setCode} />;
   return (
     <>

@@ -4,8 +4,8 @@ import { Logo } from '../components/visuals';
 
 type Mode = 'login' | 'signup' | 'reset';
 
-export function AuthScreen({ onSignedUp }: { onSignedUp: (code: string) => void }) {
-  const [mode, setMode] = useState<Mode>('login');
+export function AuthScreen({ onSignedUp, initialMode = 'login', onBack }: { onSignedUp: (code: string) => void; initialMode?: Mode; onBack?: () => void }) {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
@@ -36,6 +36,7 @@ export function AuthScreen({ onSignedUp }: { onSignedUp: (code: string) => void 
 
   return (
     <main className="auth">
+      {onBack && <button type="button" className="link auth-back" onClick={onBack}>← 장독대 소개</button>}
       <div className="auth-brand"><Logo /><b>장독대</b></div>
       <p className="auth-tag">보고 싶은 걸 담아 묵혀두고, 하나씩 꺼내 맛보는 곳</p>
 
