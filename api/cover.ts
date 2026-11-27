@@ -6,7 +6,7 @@ const ALLOWED = [
   'ridibooks.com', 'lezhin.com', 'bomtoon.com', 'kyobobook.co.kr', 'aladin.co.kr', 'yes24.com',
   'comic.naver.com', 'series.naver.com', 'page.kakao.com', 'webtoon.kakao.com', 'millie.co.kr',
   'onestory.co.kr', 'toptoon.com', 'mrblue.com', 'themoviedb.org', 'watcha.com', 'kopis.or.kr',
-  'interpark.com', 'nol.com', 'ticketlink.co.kr', 'playdb.co.kr',
+  'interpark.com', 'nol.com', 'yanolja.com', 'ticketlink.co.kr', 'playdb.co.kr', 'themusical.co.kr', 'sac.or.kr',
 ];
 const allowed = (host: string) => ALLOWED.some((d) => host === d || host.endsWith(`.${d}`));
 
