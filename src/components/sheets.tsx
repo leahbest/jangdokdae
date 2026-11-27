@@ -240,7 +240,7 @@ function SearchPane({ jar, added, onAdd }: { jar: Jar; added: string[]; onAdd: (
         <label htmlFor="q">{TYPES[jar.type].label} 찾기</label>
         <input id="q" type="search" placeholder="제목이나 만든 사람" autoComplete="off" value={q} onChange={(e) => setQ(e.target.value)} />
       </div>
-      <div className="src"><span>{TYPES[jar.type].src}에서 찾아요</span><span>{busy ? '찾는 중…' : hits ? `${hits.length}건` : ''}</span></div>
+      <div className="src"><span>{TYPES[jar.type].src}에서 찾아요{TYPES[jar.type].src === 'TMDB' ? ' · 영화 정보 제공 TMDB' : ''}</span><span>{busy ? '찾는 중…' : hits ? `${hits.length}건` : ''}</span></div>
       {err && <p className="err" role="alert">{err}</p>}
       <div className="results">
         {hits?.map((h, k) => {

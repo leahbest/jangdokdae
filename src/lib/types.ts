@@ -5,9 +5,9 @@ export const TYPES: Record<JarType, { label: string; src: string | null }> = {
   book: { label: '책', src: '카카오 책' },
   webnovel: { label: '웹소설', src: '카카오 책' },
   comic: { label: '웹툰·만화', src: '카카오 책' },
-  movie: { label: '영화', src: null },
-  drama: { label: '드라마', src: null },
-  variety: { label: '예능', src: null },
+  movie: { label: '영화', src: 'TMDB' },
+  drama: { label: '드라마', src: 'TMDB' },
+  variety: { label: '예능', src: 'TMDB' },
   musical: { label: '뮤지컬', src: null },
   play: { label: '연극', src: null },
 };

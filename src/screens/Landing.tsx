@@ -44,7 +44,7 @@ export function Landing({ onStart, onLogin }: { onStart: () => void; onLogin: ()
           <div className="lp-text">
             <span className="lp-num">1</span>
             <h3>사둔 책·영화·드라마를 담아두고 도장깨기</h3>
-            <p>종류별로 장독을 놓고 작품을 담아요. 책은 제목만 검색하면 표지까지 쏙, 영화·드라마는 포스터를 붙여넣으면 끝.</p>
+            <p>종류별로 장독을 놓고 작품을 담아요. 책·영화·드라마·예능은 제목만 검색하면 표지와 포스터까지 쏙, 공연이나 연재 웹툰은 포스터를 붙여넣으면 끝.</p>
           </div>
         </article>
 
@@ -117,6 +117,7 @@ export function Landing({ onStart, onLogin }: { onStart: () => void; onLogin: ()
 
       <footer className="lp-foot">
         <div><a href="/privacy.html">개인정보처리방침</a> · <a href="/terms.html">이용약관</a> · 문의 leah.contact.948@gmail.com</div>
+        <div className="lp-credit">영화·드라마·예능 정보와 포스터는 TMDB에서 제공받아요. This product uses the TMDB API but is not endorsed or certified by TMDB.</div>
         <div>© 2026 장독대</div>
       </footer>
     </div>

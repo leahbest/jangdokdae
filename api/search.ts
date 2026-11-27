@@ -1,10 +1,11 @@
-// 책 표지 검색: GET /api/search?type=book&q=데미안  (책·웹소설·웹툰/만화 → 카카오 책 검색)
-// 영화·드라마·예능·공연은 검색 없이 이미지 링크로 담아요. 키는 Vercel 환경 변수 KAKAO_REST_KEY에만 둬요.
+// 표지 검색: GET /api/search?type=book&q=데미안
+// 책·웹소설·웹툰/만화 → 카카오 책 검색, 영화·드라마·예능 → TMDB, 공연은 검색 없이 표지 넣기(예매 사이트 링크·사진)
+// 키는 Vercel 환경 변수(KAKAO_REST_KEY, TMDB_TOKEN)에만 둬요.
 import { HttpError, decode, fetchWithTimeout, https, one, type Hit, type Req, type Res } from './_lib.js';
 
 function need(name: string, label: string) {
   const v = process.env[name];
-  if (!v) throw new HttpError(503, `${label} 키가 아직 설정되지 않았어요.`);
+  if (!v) throw new HttpError(503, `${label} 검색을 준비하고 있어요. 잠시만 ‘표지 넣기’ 탭으로 담아주세요.`);
   return v;
 }
 
@@ -39,6 +40,45 @@ async function kakaoBooks(q: string): Promise<Hit[]> {
   }));
 }
 
+/* ── TMDB ── */
+type TmdbItem = { id: number; title?: string; name?: string; original_title?: string; original_name?: string;
+  release_date?: string; first_air_date?: string; poster_path?: string | null };
+
+async function tmdb(q: string, kind: 'movie' | 'tv'): Promise<Hit[]> {
+  const token = need('TMDB_TOKEN', 'TMDB');
+  const u = new URL(`https://api.themoviedb.org/3/search/${kind}`);
+  u.searchParams.set('query', q);
+  u.searchParams.set('language', 'ko-KR');
+  u.searchParams.set('include_adult', 'false');
+  const headers: Record<string, string> = { accept: 'application/json' };
+  // 긴 "API Read Access Token"이면 헤더로, 짧은 "API Key"면 주소에 넣어요.
+  if (token.length > 40) headers.Authorization = `Bearer ${token}`;
+  else u.searchParams.set('api_key', token);
+  const r = await fetchWithTimeout(u.toString(), { headers });
+  if (r.status === 401) throw new HttpError(502, 'TMDB 키가 맞지 않아요.');
+  if (!r.ok) throw new HttpError(502, `TMDB 오류 (${r.status})`);
+  const data = (await r.json()) as { results?: TmdbItem[] };
+  // 포스터가 있고 제목이 검색어와 같은 작품을 위로
+  const norm = (x: string) => x.replace(/\s/g, '').toLowerCase();
+  const nq = norm(q);
+  const list = (data.results || []).slice().sort((a, b) => {
+    const score = (it: TmdbItem) => (it.poster_path ? 2 : 0) + (norm(it.title || it.name || '') === nq ? 4 : 0);
+    return score(b) - score(a);
+  });
+  return list.slice(0, 20).map((it) => {
+    const title = it.title || it.name || '';
+    const orig = it.original_title || it.original_name || '';
+    const year = (it.release_date || it.first_air_date || '').slice(0, 4);
+    return {
+      title,
+      creator: '',
+      sub: [year, orig && orig !== title ? orig : ''].filter(Boolean).join(' · '),
+      cover: it.poster_path ? `https://image.tmdb.org/t/p/w342${it.poster_path}` : null,
+      link: `https://www.themoviedb.org/${kind}/${it.id}`,
+    };
+  });
+}
+
 export default async function handler(req: Req, res: Res) {
   const type = one(req.query.type);
   const q = one(req.query.q);
@@ -48,7 +88,9 @@ export default async function handler(req: Req, res: Res) {
     let hits: Hit[];
     switch (type) {
       case 'book': case 'comic': case 'webnovel': hits = await kakaoBooks(q); break;
-      default: throw new HttpError(400, '이 종류는 검색 대신 이미지 링크로 담아요.');
+      case 'movie': hits = await tmdb(q, 'movie'); break;
+      case 'drama': case 'variety': hits = await tmdb(q, 'tv'); break;
+      default: throw new HttpError(400, '이 종류는 검색 대신 표지 넣기로 담아요.');
     }
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
     res.status(200).json({ hits });
