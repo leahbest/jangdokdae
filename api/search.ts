@@ -56,7 +56,7 @@ async function tmdb(q: string, kind: 'movie' | 'tv'): Promise<Hit[]> {
   if (token.length > 40) headers.Authorization = `Bearer ${token}`;
   else u.searchParams.set('api_key', token);
   const r = await fetchWithTimeout(u.toString(), { headers });
-  if (r.status === 401) throw new HttpError(502, 'TMDB 키가 맞지 않아요.');
+  if (r.status === 401) throw new HttpError(503, 'TMDB 검색을 준비하고 있어요. 잠시만 ‘표지 넣기’ 탭으로 담아주세요.');
   if (!r.ok) throw new HttpError(502, `TMDB 오류 (${r.status})`);
   const data = (await r.json()) as { results?: TmdbItem[] };
   // 포스터가 있고 제목이 검색어와 같은 작품을 위로
