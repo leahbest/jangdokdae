@@ -2,9 +2,9 @@ export type JarType = 'book' | 'webnovel' | 'comic' | 'movie' | 'drama' | 'varie
 
 /** src: 표지 검색처. null이면 검색 없이 이미지 링크·사진으로 담아요. */
 export const TYPES: Record<JarType, { label: string; src: string | null }> = {
-  book: { label: '책', src: '카카오 책' },
-  webnovel: { label: '웹소설', src: '카카오 책' },
-  comic: { label: '웹툰·만화', src: '카카오 책' },
+  book: { label: '책', src: '예스24' },
+  webnovel: { label: '웹소설', src: '예스24' },
+  comic: { label: '웹툰·만화', src: '예스24' },
   movie: { label: '영화', src: 'TMDB' },
   drama: { label: '드라마', src: 'TMDB' },
   variety: { label: '예능', src: 'TMDB' },

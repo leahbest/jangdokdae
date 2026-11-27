@@ -117,7 +117,7 @@ export function Landing({ onStart, onLogin }: { onStart: () => void; onLogin: ()
 
       <footer className="lp-foot">
         <div><a href="/privacy.html">개인정보처리방침</a> · <a href="/terms.html">이용약관</a> · 문의 leah.contact.948@gmail.com</div>
-        <div className="lp-credit">영화·드라마·예능 정보와 포스터는 TMDB에서 제공받아요. This product uses the TMDB API but is not endorsed or certified by TMDB.</div>
+        <div className="lp-credit">도서 정보와 표지는 예스24 Open API, 영화·드라마·예능 정보와 포스터는 TMDB에서 제공받아요. This product uses the TMDB API but is not endorsed or certified by TMDB.</div>
         <div>© 2026 장독대</div>
       </footer>
     </div>

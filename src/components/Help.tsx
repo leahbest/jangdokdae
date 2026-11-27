@@ -48,7 +48,7 @@ export function HelpSheet({ onClose }: { onClose: () => void }) {
           <div className="help-card">
             <h4>📚 책 · 웹소설 · 만화책</h4>
             <p><b>검색</b> 탭에서 제목을 찾아 <b>담기</b>만 누르면 표지까지 쏙!</p>
-            <p className="help-tip">카카오 책 검색이라 <b>종이책·전자책으로 나온 작품</b>만 찾을 수 있어요. 연재 중인 웹툰·웹소설은 아래 ‘표지 넣기’로 담아주세요.</p>
+            <p className="help-tip">예스24 검색이라 <b>종이책·전자책으로 나온 작품</b>만 찾을 수 있어요. 연재 중인 웹툰·웹소설은 아래 ‘표지 넣기’로 담아주세요.</p>
           </div>
 
           <div className="help-card">

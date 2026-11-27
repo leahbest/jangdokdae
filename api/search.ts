@@ -1,6 +1,6 @@
 // 표지 검색: GET /api/search?type=book&q=데미안
-// 책·웹소설·웹툰/만화 → 카카오 책 검색, 영화·드라마·예능 → TMDB, 공연은 검색 없이 표지 넣기(예매 사이트 링크·사진)
-// 키는 Vercel 환경 변수(KAKAO_REST_KEY, TMDB_TOKEN)에만 둬요.
+// 책·웹소설·웹툰/만화 → 예스24 검색(결과 없거나 오류면 카카오 책 검색), 영화·드라마·예능 → TMDB, 공연은 표지 넣기
+// 키는 Vercel 환경 변수(YES24_KEY, KAKAO_REST_KEY, TMDB_TOKEN)에만 둬요.
 import { HttpError, decode, fetchWithTimeout, https, one, type Hit, type Req, type Res } from './_lib.js';
 
 function need(name: string, label: string) {
@@ -38,6 +38,48 @@ async function kakaoBooks(q: string): Promise<Hit[]> {
     cover: bigCover(b.thumbnail),
     link: https(b.url),
   }));
+}
+
+/* ── 예스24 Open API ── (https://developers.yes24.com, 초당 5회·하루 5,000회) */
+type Yes24Item = { itemId: number; title?: string; subTitle?: string; author?: string; publisher?: string;
+  publishDate?: string; goodsSortNm?: string; cover?: string; link?: string; mobileLink?: string };
+
+/** 예스24 검색. 결과가 없거나 오류면 null을 돌려줘서 카카오로 넘어가요. */
+async function yes24Books(q: string): Promise<Hit[] | null> {
+  const key = process.env.YES24_KEY?.trim();
+  if (!key) return null;
+  const u = new URL('https://apis.yes24.com/v1/goods/itemList');
+  u.searchParams.set('query', q);
+  u.searchParams.set('category', 'ALL');
+  u.searchParams.set('sort', 'RELATION');
+  u.searchParams.set('pageSize', '30');
+  let r: Response;
+  try {
+    r = await fetchWithTimeout(u.toString(), { headers: { 'X-Api-Key': key, accept: 'application/json' } }, 6000);
+  } catch {
+    return null;
+  }
+  if (!r.ok) {
+    if (r.status !== 404) console.warn('yes24', r.status, await r.text().catch(() => ''));
+    return null;
+  }
+  const body = (await r.json().catch(() => null)) as { data?: { items?: Yes24Item[] } } | null;
+  const items = (body?.data?.items || []).filter((b) => !/음반|DVD|블루레이|LP|굿즈|문구/i.test(b.goodsSortNm || ''));
+  if (!items.length) return null;
+  return items.map((b) => ({
+    title: decode(b.title || ''),
+    creator: decode(b.author || ''),
+    sub: [b.goodsSortNm === 'eBook' || /전자책|eBook/i.test(b.goodsSortNm || '') ? 'eBook' : '', b.publisher, (b.publishDate || '').slice(0, 4)]
+      .filter(Boolean).join(' · '),
+    cover: https(b.cover) || null,
+    link: https(b.link) || `https://www.yes24.com/product/goods/${b.itemId}`,
+  }));
+}
+
+async function books(q: string): Promise<Hit[]> {
+  const y = await yes24Books(q);
+  if (y) return y;
+  return kakaoBooks(q);
 }
 
 /* ── TMDB ── */
@@ -88,7 +130,7 @@ export default async function handler(req: Req, res: Res) {
     if (q.length > 100) throw new HttpError(400, '검색어가 너무 길어요.');
     let hits: Hit[];
     switch (type) {
-      case 'book': case 'comic': case 'webnovel': hits = await kakaoBooks(q); break;
+      case 'book': case 'comic': case 'webnovel': hits = await books(q); break;
       case 'movie': hits = await tmdb(q, 'movie'); break;
       case 'drama': case 'variety': hits = await tmdb(q, 'tv'); break;
       default: throw new HttpError(400, '이 종류는 검색 대신 표지 넣기로 담아요.');
