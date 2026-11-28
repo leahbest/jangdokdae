@@ -177,7 +177,7 @@ async function getJSON<T>(url: string): Promise<T> {
   try {
     r = await fetch(url);
   } catch {
-    throw new Error('인터넷 연결을 확인해주세요.');
+    throw new Error('검색 서버에 연결하지 못했어요. 새로고침하거나, 와이파이를 끄고 데이터로 다시 해보세요.');
   }
   const body = await r.json().catch(() => null);
   if (!body) throw new Error('표지 서버에 연결하지 못했어요. 잠시 후 다시 시도해주세요.');
@@ -185,7 +185,7 @@ async function getJSON<T>(url: string): Promise<T> {
   return body as T;
 }
 
-/** 담기: 검색(책 종류만, 카카오) / 표지 넣기(붙여넣기·주소·사진) / 직접 입력 */
+/** 담기: 검색(책 종류는 예스24) / 표지 넣기(붙여넣기·주소·사진) / 직접 입력 */
 export function AddSheet({ jar, onClose, onAdd }: { jar: Jar; onClose: () => void; onAdd: (d: NewItem) => void }) {
   const searchable = !!TYPES[jar.type].src;
   const [tab, setTab] = useState<AddTab>(searchable ? 'search' : 'cover');

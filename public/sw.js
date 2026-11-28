@@ -1,6 +1,6 @@
 // 장독대 서비스 워커: 홈 화면 앱이 빠르게 열리고, 인터넷이 끊겨도 첫 화면은 보이게.
 // 데이터(Supabase)와 검색(/api)은 건드리지 않아요.
-const CACHE = 'jangdokdae-v1';
+const CACHE = 'jangdokdae-v2';
 const SHELL = ['/', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
